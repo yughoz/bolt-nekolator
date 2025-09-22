@@ -56,12 +56,12 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
               )}
             </div>
             
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {persons.map((person) => (
                 <button
                   key={person.id}
                   onClick={() => onToggleAssignment(item.id, person.id)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors min-h-[40px] ${
                     isAssigned(item.id, person.id)
                       ? 'bg-purple-100 text-purple-800 border border-purple-300'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

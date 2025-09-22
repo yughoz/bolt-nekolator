@@ -23,36 +23,36 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
       <div
         {...dragHandleProps}
-        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 self-start sm:self-center"
       >
         <GripVertical size={16} />
       </div>
       
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 w-full space-y-2">
         <input
           type="text"
           value={item.name}
           onChange={(e) => onUpdate(item.id, { name: e.target.value })}
           placeholder="Item name"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
         />
         
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="number"
             value={item.price}
             onChange={(e) => onUpdate(item.id, { price: Number(e.target.value) || 0 })}
             placeholder="Price"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
           />
           
           <select
             value={item.category}
             onChange={(e) => onUpdate(item.id, { category: e.target.value as Item['category'] })}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+            className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
           >
             <option value="food">Food</option>
             <option value="drink">Drink</option>
@@ -61,14 +61,14 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-row sm:flex-col items-center justify-between sm:justify-center gap-2 w-full sm:w-auto">
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${categoryColors[item.category]}`}>
           {item.category}
         </span>
         
         <button
           onClick={() => onDelete(item.id)}
-          className="p-1 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+          className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
         >
           <Trash2 size={14} />
         </button>

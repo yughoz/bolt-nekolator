@@ -115,15 +115,16 @@ export const ExpertCalculator: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Items Section */}
-          <div className="bg-white rounded-lg shadow-xl p-6">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-700">Items</h3>
               <button
                 onClick={addItem}
-                className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm min-h-[40px]"
               >
                 <Plus size={16} />
-                Add Item
+                <span className="hidden sm:inline">Add Item</span>
+                <span className="sm:hidden">Add</span>
               </button>
             </div>
 
@@ -162,7 +163,7 @@ export const ExpertCalculator: React.FC = () => {
             </DragDropContext>
 
             {/* Discount and Tax */}
-            <div className="mt-6 space-y-3 pt-4 border-t border-gray-200">
+            <div className="mt-6 space-y-4 pt-4 border-t border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Total Discount
@@ -171,7 +172,7 @@ export const ExpertCalculator: React.FC = () => {
                   type="number"
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                   placeholder="0"
                 />
               </div>
@@ -183,7 +184,7 @@ export const ExpertCalculator: React.FC = () => {
                   type="number"
                   value={tax}
                   onChange={(e) => setTax(Number(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                   placeholder="0"
                 />
               </div>
@@ -191,21 +192,22 @@ export const ExpertCalculator: React.FC = () => {
           </div>
 
           {/* People Section */}
-          <div className="bg-white rounded-lg shadow-xl p-6">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-700">People</h3>
               <button
                 onClick={addPerson}
-                className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm min-h-[40px]"
               >
                 <Plus size={16} />
-                Add Person
+                <span className="hidden sm:inline">Add Person</span>
+                <span className="sm:hidden">Add</span>
               </button>
             </div>
 
             <div className="space-y-3">
               {persons.map((person) => (
-                <div key={person.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div key={person.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg min-h-[56px]">
                   <div
                     className="w-4 h-4 rounded-full"
                     style={{ backgroundColor: person.color }}
@@ -215,11 +217,11 @@ export const ExpertCalculator: React.FC = () => {
                     value={person.name}
                     onChange={(e) => updatePerson(person.id, { name: e.target.value })}
                     placeholder={`Person ${persons.indexOf(person) + 1}`}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[40px]"
                   />
                   <button
                     onClick={() => deletePerson(person.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -229,7 +231,7 @@ export const ExpertCalculator: React.FC = () => {
           </div>
 
           {/* Assignment Section */}
-          <div className="bg-white rounded-lg shadow-xl p-6">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-700 mb-4">Assignments</h3>
             <PersonAssignment
               items={items}
@@ -241,7 +243,7 @@ export const ExpertCalculator: React.FC = () => {
         </div>
 
         {/* Results */}
-        <div className="mt-6">
+        <div className="mt-6 px-2 sm:px-0">
           <ExpertResults
             persons={persons}
             totals={totals}
