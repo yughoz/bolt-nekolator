@@ -49,7 +49,7 @@ export const ReceiptUpload: React.FC = () => {
         return Array.from({ length: item.quantity }, (_, qIndex) => ({
           id: `item-${index}-${qIndex}`,
           name: `${item.name} (${qIndex + 1}/${item.quantity})`,
-          price: item.unit_price,
+          price: Math.round(item.unit_price / item.quantity),
           category: 'food' as const
         }));
       } else {
@@ -57,14 +57,14 @@ export const ReceiptUpload: React.FC = () => {
         return [{
           id: `item-${index}`,
           name: item.name,
-          price: item.total,
+          price: Math.round(item.total),
           category: 'food' as const
         }];
       }
     });
 
-    const discount = data.total_discounts;
-    const tax = data.total_fees;
+    const discount = Math.round(data.total_discounts);
+    const tax = Math.round(data.total_fees);
 
     // Navigate to expert calculator with pre-filled data
     navigate('/expert', { 
