@@ -131,11 +131,11 @@ export const ViewCalculation: React.FC = () => {
 
         <div className="mt-6 text-center">
           <Link
-            to="/"
+            to="/calculator"
             className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-md hover:bg-gray-50 transition-colors font-medium"
           >
             <ArrowLeft size={20} />
-            Create New Calculation
+            Back to Calculator
           </Link>
         </div>
       </div>

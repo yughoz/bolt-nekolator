@@ -56,11 +56,11 @@ export const EditCalculation: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Calculation Not Found</h2>
           <p className="text-gray-600 mb-6">{error || 'The calculation you\'re looking for doesn\'t exist.'}</p>
           <Link
-            to="/"
+            to="/calculator"
             className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
           >
             <ArrowLeft size={20} />
-            Create New Calculation
+            Back to Calculator
           </Link>
         </div>
       </div>
