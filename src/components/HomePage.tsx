@@ -38,7 +38,7 @@ export const HomePage: React.FC = () => {
 
           {/* Expert Calculator */}
           <Link
-            to="/expert"
+            to="/upload"
             className="group relative"
           >
             <div className="absolute -inset-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -49,7 +49,7 @@ export const HomePage: React.FC = () => {
                   <Sparkles size={24} className="text-orange-400 absolute -top-2 -right-2" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">Expert Mode</h3>
-                <p className="text-gray-600">Drag & drop items with smart calculations</p>
+                <p className="text-gray-600">Upload receipt or drag & drop items with smart calculations</p>
               </div>
             </div>
           </Link>

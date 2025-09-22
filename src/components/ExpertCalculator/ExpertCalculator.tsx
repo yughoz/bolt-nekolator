@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Plus, Save, Share2, Trash2, GripVertical } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { ItemEntry } from './ItemEntry';
 import { PersonAssignment } from './PersonAssignment';
@@ -10,15 +10,21 @@ import { calculateExpertTotals } from '../../utils/expertCalculations';
 
 export const ExpertCalculator: React.FC = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState<Item[]>([
-    { id: '1', name: '', price: 0, category: 'food' }
-  ]);
+  const location = useLocation();
+  
+  // Get initial data from receipt upload if available
+  const initialData = location.state;
+  
+  const [items, setItems] = useState<Item[]>(
+    initialData?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
+  );
   const [persons, setPersons] = useState<Person[]>([
     { id: '1', name: '', color: '#8B5CF6' }
   ]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [discount, setDiscount] = useState(0);
-  const [tax, setTax] = useState(0);
+  const [discount, setDiscount] = useState(initialData?.discount || 0);
+  const [tax, setTax] = useState(initialData?.tax || 0);
+  const [receiptData, setReceiptData] = useState(initialData?.receiptData || null);
 
   const addItem = useCallback(() => {
     const newItem: Item = {
@@ -97,7 +103,14 @@ export const ExpertCalculator: React.FC = () => {
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
             Expert Calculator
           </h1>
-          <p className="text-white/80">Drag & drop items and assign to people</p>
+          <p className="text-white/80">
+            {receiptData ? `Receipt: ${receiptData.transaction_id}` : 'Drag & drop items and assign to people'}
+          </p>
+          {receiptData && (
+            <div className="mt-2 text-sm text-white/60">
+              {receiptData.transaction_date} • {receiptData.customer_name}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
