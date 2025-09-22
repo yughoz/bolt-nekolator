@@ -1,0 +1,242 @@
+import React, { useState, useCallback } from 'react';
+import { Plus, Save, Share2, Trash2, GripVertical } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { ItemEntry } from './ItemEntry';
+import { PersonAssignment } from './PersonAssignment';
+import { ExpertResults } from './ExpertResults';
+import type { Item, Person, Assignment } from '../../types/expert';
+import { calculateExpertTotals } from '../../utils/expertCalculations';
+
+export const ExpertCalculator: React.FC = () => {
+  const navigate = useNavigate();
+  const [items, setItems] = useState<Item[]>([
+    { id: '1', name: '', price: 0, category: 'food' }
+  ]);
+  const [persons, setPersons] = useState<Person[]>([
+    { id: '1', name: '', color: '#8B5CF6' }
+  ]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [discount, setDiscount] = useState(0);
+  const [tax, setTax] = useState(0);
+
+  const addItem = useCallback(() => {
+    const newItem: Item = {
+      id: Date.now().toString(),
+      name: '',
+      price: 0,
+      category: 'food'
+    };
+    setItems(prev => [...prev, newItem]);
+  }, []);
+
+  const updateItem = useCallback((id: string, updates: Partial<Item>) => {
+    setItems(prev => prev.map(item => 
+      item.id === id ? { ...item, ...updates } : item
+    ));
+  }, []);
+
+  const deleteItem = useCallback((id: string) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+    setAssignments(prev => prev.filter(assignment => assignment.itemId !== id));
+  }, []);
+
+  const addPerson = useCallback(() => {
+    const colors = ['#8B5CF6', '#F59E0B', '#EF4444', '#10B981', '#3B82F6', '#F97316'];
+    const newPerson: Person = {
+      id: Date.now().toString(),
+      name: '',
+      color: colors[persons.length % colors.length]
+    };
+    setPersons(prev => [...prev, newPerson]);
+  }, [persons.length]);
+
+  const updatePerson = useCallback((id: string, updates: Partial<Person>) => {
+    setPersons(prev => prev.map(person => 
+      person.id === id ? { ...person, ...updates } : person
+    ));
+  }, []);
+
+  const deletePerson = useCallback((id: string) => {
+    if (persons.length > 1) {
+      setPersons(prev => prev.filter(person => person.id !== id));
+      setAssignments(prev => prev.filter(assignment => assignment.personId !== id));
+    }
+  }, [persons.length]);
+
+  const toggleAssignment = useCallback((itemId: string, personId: string) => {
+    setAssignments(prev => {
+      const existingIndex = prev.findIndex(
+        a => a.itemId === itemId && a.personId === personId
+      );
+      
+      if (existingIndex >= 0) {
+        return prev.filter((_, index) => index !== existingIndex);
+      } else {
+        return [...prev, { itemId, personId }];
+      }
+    });
+  }, []);
+
+  const handleDragEnd = useCallback((result: DropResult) => {
+    if (!result.destination) return;
+
+    const newItems = Array.from(items);
+    const [reorderedItem] = newItems.splice(result.source.index, 1);
+    newItems.splice(result.destination.index, 0, reorderedItem);
+
+    setItems(newItems);
+  }, [items]);
+
+  const totals = calculateExpertTotals(items, persons, assignments, discount, tax);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-orange-400 mb-2">
+            Expert Calculator
+          </h1>
+          <p className="text-white/80">Drag & drop items and assign to people</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Items Section */}
+          <div className="bg-white rounded-lg shadow-xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">Items</h3>
+              <button
+                onClick={addItem}
+                className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm"
+              >
+                <Plus size={16} />
+                Add Item
+              </button>
+            </div>
+
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="items">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="space-y-3"
+                  >
+                    {items.map((item, index) => (
+                      <Draggable key={item.id} draggableId={item.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`${
+                              snapshot.isDragging ? 'shadow-lg' : ''
+                            }`}
+                          >
+                            <ItemEntry
+                              item={item}
+                              onUpdate={updateItem}
+                              onDelete={deleteItem}
+                              dragHandleProps={provided.dragHandleProps}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+
+            {/* Discount and Tax */}
+            <div className="mt-6 space-y-3 pt-4 border-t border-gray-200">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Total Discount
+                </label>
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(Number(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tax & Shipping
+                </label>
+                <input
+                  type="number"
+                  value={tax}
+                  onChange={(e) => setTax(Number(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* People Section */}
+          <div className="bg-white rounded-lg shadow-xl p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">People</h3>
+              <button
+                onClick={addPerson}
+                className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm"
+              >
+                <Plus size={16} />
+                Add Person
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {persons.map((person) => (
+                <div key={person.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: person.color }}
+                  />
+                  <input
+                    type="text"
+                    value={person.name}
+                    onChange={(e) => updatePerson(person.id, { name: e.target.value })}
+                    placeholder={`Person ${persons.indexOf(person) + 1}`}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  <button
+                    onClick={() => deletePerson(person.id)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Assignment Section */}
+          <div className="bg-white rounded-lg shadow-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Assignments</h3>
+            <PersonAssignment
+              items={items}
+              persons={persons}
+              assignments={assignments}
+              onToggleAssignment={toggleAssignment}
+            />
+          </div>
+        </div>
+
+        {/* Results */}
+        <div className="mt-6">
+          <ExpertResults
+            persons={persons}
+            totals={totals}
+            discount={discount}
+            tax={tax}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

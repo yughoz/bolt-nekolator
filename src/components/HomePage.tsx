@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calculator, Users, Share2, Save } from 'lucide-react';
+import { Calculator, Users, Share2, Save, Sparkles, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const HomePage: React.FC = () => {
@@ -19,21 +19,41 @@ export const HomePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Main Calculator Button */}
-        <Link
-          to="/calculator"
-          className="group relative mb-16"
-        >
-          <div className="absolute -inset-4 bg-gradient-to-r from-orange-400 to-pink-400 rounded-full blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="relative bg-white rounded-full p-8 shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-105">
-            <Calculator size={80} className="text-purple-600 group-hover:text-purple-700 transition-colors" />
-          </div>
-          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
-            <span className="text-white font-semibold text-lg group-hover:text-orange-300 transition-colors">
-              Start Calculating
-            </span>
-          </div>
-        </Link>
+        {/* Calculator Menu Options */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl w-full">
+          {/* Basic Calculator */}
+          <Link
+            to="/calculator"
+            className="group relative"
+          >
+            <div className="absolute -inset-4 bg-gradient-to-r from-orange-400 to-pink-400 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative bg-white rounded-2xl p-8 shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <Calculator size={60} className="text-purple-600 group-hover:text-purple-700 transition-colors mx-auto mb-4" />
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Basic Calculator</h3>
+                <p className="text-gray-600">Simple bill splitting with manual entry</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Expert Calculator */}
+          <Link
+            to="/expert"
+            className="group relative"
+          >
+            <div className="absolute -inset-4 bg-gradient-to-r from-purple-400 to-blue-400 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative bg-white rounded-2xl p-8 shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-105">
+              <div className="text-center">
+                <div className="relative">
+                  <Calculator size={60} className="text-purple-600 group-hover:text-purple-700 transition-colors mx-auto mb-4" />
+                  <Sparkles size={24} className="text-orange-400 absolute -top-2 -right-2" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">Expert Mode</h3>
+                <p className="text-gray-600">Drag & drop items with smart calculations</p>
+              </div>
+            </div>
+          </Link>
+        </div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl w-full">
