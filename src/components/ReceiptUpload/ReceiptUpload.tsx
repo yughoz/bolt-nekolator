@@ -43,12 +43,25 @@ export const ReceiptUpload: React.FC = () => {
 
   const processReceiptData = (data: ReceiptData) => {
     // Convert receipt data to expert calculator format
-    const items = data.items.map((item, index) => ({
-      id: `item-${index}`,
-      name: item.name,
-      price: item.total,
-      category: 'food' as const
-    }));
+    const items = data.items.flatMap((item, index) => {
+      if (item.quantity > 1) {
+        // Create multiple items for quantities > 1
+        return Array.from({ length: item.quantity }, (_, qIndex) => ({
+          id: `item-${index}-${qIndex}`,
+          name: `${item.name} (${qIndex + 1}/${item.quantity})`,
+          price: item.unit_price,
+          category: 'food' as const
+        }));
+      } else {
+        // Single item
+        return [{
+          id: `item-${index}`,
+          name: item.name,
+          price: item.total,
+          category: 'food' as const
+        }];
+      }
+    });
 
     const discount = data.total_discounts;
     const tax = data.total_fees;
