@@ -73,7 +73,13 @@ export const ReceiptUpload: React.FC = () => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('http://n8n.yuu.my.id/webhook-test/struk', {
+      const apiUrl = import.meta.env.VITE_RECEIPT_UPLOAD_API_URL;
+      
+      if (!apiUrl) {
+        throw new Error('Receipt upload API URL is not configured. Please check your environment variables.');
+      }
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       });
