@@ -101,20 +101,20 @@ export const ViewCalculation: React.FC = () => {
           {calculation.discountResult > 0 && (
             <div className="mb-2">
               <span className="text-sm text-gray-600">Discount: </span>
-              <span className="font-medium">{new Intl.NumberFormat('id-ID').format(calculation.discountResult)}</span>
+              <span className="font-medium">{Math.round(calculation.discountResult).toString()}</span>
             </div>
           )}
           
           {calculation.taxResult > 0 && (
             <div className="mb-2">
               <span className="text-sm text-gray-600">Tax & Shipping: </span>
-              <span className="font-medium">{new Intl.NumberFormat('id-ID').format(calculation.taxResult)}</span>
+              <span className="font-medium">{Math.round(calculation.taxResult).toString()}</span>
             </div>
           )}
           
           <div className="mb-2">
             <span className="text-sm text-gray-600">Total Before Adjustments: </span>
-            <span className="font-medium">{new Intl.NumberFormat('id-ID').format(calculation.overallTotal)}</span>
+            <span className="font-medium">{Math.round(calculation.overallTotal).toString()}</span>
           </div>
         </div>
 

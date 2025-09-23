@@ -38,7 +38,7 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
                   {item.name || 'Unnamed Item'}
                 </h4>
                 <p className="text-sm text-gray-600">
-                  {new Intl.NumberFormat('id-ID').format(item.price)}
+                  {Math.round(item.price).toString()}
                 </p>
               </div>
               

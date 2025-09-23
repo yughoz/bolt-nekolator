@@ -36,10 +36,10 @@ export const ExpertResults: React.FC<ExpertResultsProps> = ({
               
               <div className="text-right">
                 <div className="text-lg font-semibold text-orange-600">
-                  {new Intl.NumberFormat('id-ID').format(personTotal)}
+                  {Math.round(personTotal).toString()}
                 </div>
                 <div className="text-xs text-gray-500">
-                  Items: {new Intl.NumberFormat('id-ID').format(totals.personItemTotals[person.id] || 0)}
+                  Items: {Math.round(totals.personItemTotals[person.id] || 0).toString()}
                 </div>
               </div>
             </div>
@@ -50,25 +50,25 @@ export const ExpertResults: React.FC<ExpertResultsProps> = ({
           <div className="space-y-2 text-sm text-gray-600 mb-3">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>{new Intl.NumberFormat('id-ID').format(totals.subtotal)}</span>
+              <span>{Math.round(totals.subtotal).toString()}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between">
                 <span>Discount:</span>
-                <span>-{new Intl.NumberFormat('id-ID').format(discount)}</span>
+                <span>-{Math.round(discount).toString()}</span>
               </div>
             )}
             {tax > 0 && (
               <div className="flex justify-between">
                 <span>Tax & Shipping:</span>
-                <span>{new Intl.NumberFormat('id-ID').format(tax)}</span>
+                <span>{Math.round(tax).toString()}</span>
               </div>
             )}
           </div>
           
           <div className="flex justify-between items-center text-xl font-bold text-orange-600">
             <span>Total Final:</span>
-            <span>{new Intl.NumberFormat('id-ID').format(totals.finalTotal)}</span>
+            <span>{Math.round(totals.finalTotal).toString()}</span>
           </div>
         </div>
       </div>
