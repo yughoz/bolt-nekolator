@@ -101,7 +101,19 @@ export const ReceiptUpload: React.FC = () => {
         throw new Error(`Upload failed: ${response.statusText}`);
       }
 
-      const data: ReceiptData = await response.json();
+      const responseText = await response.text();
+      
+      if (!responseText || responseText.trim() === '') {
+        throw new Error('Server returned an empty response');
+      }
+
+      let data: ReceiptData;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`Invalid JSON response from server: ${responseText.substring(0, 100)}...`);
+      }
+
       setUploadStatus('success');
       
       // Process the data after a short delay to show success state
