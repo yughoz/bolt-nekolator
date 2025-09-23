@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Plus, Save, Share2, Trash2, GripVertical } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, Save, Share2, Trash2, GripVertical, ArrowLeft, Home } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { ItemEntry } from './ItemEntry';
 import { PersonAssignment } from './PersonAssignment';
@@ -167,6 +167,40 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
       <div className="max-w-6xl mx-auto">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/"
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-md hover:bg-white/20 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <Home size={20} />
+            <span className="hidden sm:inline">Home</span>
+          </Link>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              <Save size={16} />
+              <span className="hidden sm:inline">
+                {isSaving ? 'Saving...' : currentCalculationId ? 'Update' : 'Save'}
+              </span>
+            </button>
+            
+            <button
+              onClick={handleShare}
+              disabled={!currentCalculationId}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              <Share2 size={16} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
             Expert Calculator
@@ -181,26 +215,6 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
           )}
         </div>
 
-        {/* Save and Share buttons */}
-        <div className="flex justify-center gap-3 mb-6">
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
-          >
-            <Save size={16} />
-            {isSaving ? 'Saving...' : currentCalculationId ? 'Update' : 'Save'}
-          </button>
-          
-          <button
-            onClick={handleShare}
-            disabled={!currentCalculationId}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            <Share2 size={16} />
-            Share
-          </button>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Items Section */}
