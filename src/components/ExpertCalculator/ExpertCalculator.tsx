@@ -136,8 +136,8 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         const id = await saveExpertCalculation(calculationData);
         if (id) {
           setCurrentCalculationId(id);
-          // Navigate to the edit URL
-          navigate(`/expert/${id}/edit`);
+          // Update the URL without full navigation to avoid component remount
+          window.history.replaceState(null, '', `/expert/${id}/edit`);
           alert(`Calculation saved! Share this link: ${window.location.origin}/expert/${id}`);
         } else {
           alert('Failed to save calculation');
