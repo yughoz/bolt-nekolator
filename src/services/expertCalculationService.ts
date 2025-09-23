@@ -6,6 +6,8 @@ export interface ExpertCalculationData {
   items: Item[];
   persons: Person[];
   assignments: Assignment[];
+  discountValue?: string;
+  taxValue?: string;
   discount: number;
   tax: number;
   subtotal: number;
@@ -21,6 +23,8 @@ export const saveExpertCalculation = async (data: ExpertCalculationData): Promis
         items: data.items,
         persons: data.persons,
         assignments: data.assignments,
+        discount_value: data.discountValue || '',
+        tax_value: data.taxValue || '',
         discount: data.discount,
         tax: data.tax,
         subtotal: data.subtotal,
@@ -60,6 +64,8 @@ export const getExpertCalculation = async (id: string): Promise<ExpertCalculatio
       items: data.items,
       persons: data.persons,
       assignments: data.assignments,
+      discountValue: data.discount_value || '',
+      taxValue: data.tax_value || '',
       discount: data.discount,
       tax: data.tax,
       subtotal: data.subtotal,
@@ -80,6 +86,8 @@ export const updateExpertCalculation = async (id: string, data: Partial<ExpertCa
         items: data.items,
         persons: data.persons,
         assignments: data.assignments,
+        discount_value: data.discountValue,
+        tax_value: data.taxValue,
         discount: data.discount,
         tax: data.tax,
         subtotal: data.subtotal,

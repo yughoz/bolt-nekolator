@@ -55,6 +55,8 @@ export type Database = {
           items: Item[];
           persons: Person[];
           assignments: Assignment[];
+          discount_value: string;
+          tax_value: string;
           discount: number;
           tax: number;
           subtotal: number;
@@ -68,6 +70,8 @@ export type Database = {
           items?: Item[];
           persons?: Person[];
           assignments?: Assignment[];
+          discount_value?: string;
+          tax_value?: string;
           discount?: number;
           tax?: number;
           subtotal?: number;
@@ -81,6 +85,8 @@ export type Database = {
           items?: Item[];
           persons?: Person[];
           assignments?: Assignment[];
+          discount_value?: string;
+          tax_value?: string;
           discount?: number;
           tax?: number;
           subtotal?: number;
