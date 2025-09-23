@@ -36,10 +36,10 @@ export const ExpertResults: React.FC<ExpertResultsProps> = ({
               
               <div className="text-right">
                 <div className="text-lg font-semibold text-orange-600">
-                  {Math.round(personTotal).toString()}
+                  {new Intl.NumberFormat('id-ID').format(Math.round(personTotal))}
                 </div>
                 <div className="text-xs text-gray-500">
-                  Items: {Math.round(totals.personItemTotals[person.id] || 0).toString()}
+                  Items: {new Intl.NumberFormat('id-ID').format(Math.round(totals.personItemTotals[person.id] || 0))}
                 </div>
               </div>
             </div>
@@ -50,25 +50,25 @@ export const ExpertResults: React.FC<ExpertResultsProps> = ({
           <div className="space-y-2 text-sm text-gray-600 mb-3">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>{Math.round(totals.subtotal).toString()}</span>
+              <span>{new Intl.NumberFormat('id-ID').format(Math.round(totals.subtotal))}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between">
                 <span>Discount:</span>
-                <span>-{Math.round(discount).toString()}</span>
+                <span>-{new Intl.NumberFormat('id-ID').format(Math.round(discount))}</span>
               </div>
             )}
             {tax > 0 && (
               <div className="flex justify-between">
                 <span>Tax & Shipping:</span>
-                <span>{Math.round(tax).toString()}</span>
+                <span>{new Intl.NumberFormat('id-ID').format(Math.round(tax))}</span>
               </div>
             )}
           </div>
           
           <div className="flex justify-between items-center text-xl font-bold text-orange-600">
             <span>Total Final:</span>
-            <span>{Math.round(totals.finalTotal).toString()}</span>
+            <span>{new Intl.NumberFormat('id-ID').format(Math.round(totals.finalTotal))}</span>
           </div>
         </div>
       </div>

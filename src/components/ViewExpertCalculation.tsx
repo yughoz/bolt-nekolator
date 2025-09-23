@@ -130,14 +130,14 @@ export const ViewExpertCalculation: React.FC = () => {
           {calculation.discount > 0 && (
             <div className="mt-2">
               <span className="text-sm text-gray-600">Discount: </span>
-              <span className="font-medium">{Math.round(calculation.discount).toString()}</span>
+              <span className="font-medium">{new Intl.NumberFormat('id-ID').format(Math.round(calculation.discount))}</span>
             </div>
           )}
           
           {calculation.tax > 0 && (
             <div className="mt-2">
               <span className="text-sm text-gray-600">Tax & Shipping: </span>
-              <span className="font-medium">{Math.round(calculation.tax).toString()}</span>
+              <span className="font-medium">{new Intl.NumberFormat('id-ID').format(Math.round(calculation.tax))}</span>
             </div>
           )}
         </div>
@@ -157,7 +157,7 @@ export const ViewExpertCalculation: React.FC = () => {
                   <div>
                     <div className="font-medium">{item.name}</div>
                     <div className="text-sm text-gray-600">
-                      {Math.round(item.price).toString()} • {item.category}
+                      {new Intl.NumberFormat('id-ID').format(Math.round(item.price))} • {item.category}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

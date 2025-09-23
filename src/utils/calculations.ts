@@ -15,7 +15,7 @@ export const parseAdditionString = (input: string): number => {
 };
 
 export const formatNumber = (number: number): string => {
-  return Math.round(number).toString();
+  return new Intl.NumberFormat('id-ID').format(Math.round(number));
 };
 
 export const calculatePersonTotal = (
