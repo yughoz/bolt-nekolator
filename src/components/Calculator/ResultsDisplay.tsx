@@ -52,19 +52,19 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 <div className="mt-2 space-y-1 text-sm text-gray-600">
                   <div className="flex justify-between">
                     <span>Price:</span>
-                    <span>{formatNumber(person.totalPrice)}</span>
+                    <span>{new Intl.NumberFormat('id-ID').format(person.totalPrice)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Disc:</span>
-                    <span>-{formatNumber(breakdown.discountAmount)}</span>
+                    <span>-{new Intl.NumberFormat('id-ID').format(Math.round(breakdown.discountAmount))}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax:</span>
-                    <span>{formatNumber(breakdown.taxAmount)}</span>
+                    <span>{new Intl.NumberFormat('id-ID').format(Math.round(breakdown.taxAmount))}</span>
                   </div>
                   <div className="flex justify-between font-semibold text-orange-600 border-t border-gray-200 pt-1">
                     <span>Total:</span>
-                    <span>{formatNumber(breakdown.finalAmount)}</span>
+                    <span>{new Intl.NumberFormat('id-ID').format(Math.round(breakdown.finalAmount))}</span>
                   </div>
                 </div>
               )}
@@ -75,7 +75,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         <div className="pt-4 border-t-2 border-orange-200">
           <div className="flex justify-between items-center text-xl font-bold text-orange-600">
             <span>Total final:</span>
-            <span>{formatNumber(finalTotal)}</span>
+            <span>{new Intl.NumberFormat('id-ID').format(Math.round(finalTotal))}</span>
           </div>
         </div>
       </div>

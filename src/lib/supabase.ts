@@ -49,9 +49,57 @@ export type Database = {
           updated_at?: string;
         };
       };
+      expert_calculations: {
+        Row: {
+          id: string;
+          items: Item[];
+          persons: Person[];
+          assignments: Assignment[];
+          discount_value: string;
+          tax_value: string;
+          discount: number;
+          tax: number;
+          subtotal: number;
+          final_total: number;
+          receipt_data: any;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          items?: Item[];
+          persons?: Person[];
+          assignments?: Assignment[];
+          discount_value?: string;
+          tax_value?: string;
+          discount?: number;
+          tax?: number;
+          subtotal?: number;
+          final_total?: number;
+          receipt_data?: any;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          items?: Item[];
+          persons?: Person[];
+          assignments?: Assignment[];
+          discount_value?: string;
+          tax_value?: string;
+          discount?: number;
+          tax?: number;
+          subtotal?: number;
+          final_total?: number;
+          receipt_data?: any;
+          updated_at?: string;
+        };
+      };
     };
   };
 };
+
+import type { Item, Person, Assignment } from '../types/expert';
 
 export interface PersonEntry {
   id: string;

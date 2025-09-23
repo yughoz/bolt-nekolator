@@ -1,30 +1,46 @@
 import React, { useState, useCallback } from 'react';
-import { Plus, Save, Share2, Trash2, GripVertical } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, Save, Share2, Trash2, GripVertical, ArrowLeft, Home } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { ItemEntry } from './ItemEntry';
 import { PersonAssignment } from './PersonAssignment';
 import { ExpertResults } from './ExpertResults';
 import type { Item, Person, Assignment } from '../../types/expert';
 import { calculateExpertTotals } from '../../utils/expertCalculations';
+import { saveExpertCalculation, updateExpertCalculation } from '../../services/expertCalculationService';
+import type { ExpertCalculationData } from '../../services/expertCalculationService';
+import { parseAdditionString } from '../../utils/calculations';
 
-export const ExpertCalculator: React.FC = () => {
+interface ExpertCalculatorProps {
+  calculationId?: string;
+  initialData?: ExpertCalculationData;
+}
+
+export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
+  calculationId,
+  initialData,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   
   // Get initial data from receipt upload if available
-  const initialData = location.state;
+  const locationData = location.state;
+  const dataToUse = initialData || locationData;
   
   const [items, setItems] = useState<Item[]>(
-    initialData?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
+    dataToUse?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
   );
   const [persons, setPersons] = useState<Person[]>([
-    { id: '1', name: '', color: '#8B5CF6' }
+    dataToUse?.persons || [{ id: '1', name: '', color: '#8B5CF6' }]
   ]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [discount, setDiscount] = useState(initialData?.discount || 0);
-  const [tax, setTax] = useState(initialData?.tax || 0);
-  const [receiptData, setReceiptData] = useState(initialData?.receiptData || null);
+  const [assignments, setAssignments] = useState<Assignment[]>(dataToUse?.assignments || []);
+  const [discountValue, setDiscountValue] = useState('');
+  const [taxValue, setTaxValue] = useState('');
+  const [discount, setDiscount] = useState(dataToUse?.discount || 0);
+  const [tax, setTax] = useState(dataToUse?.tax || 0);
+  const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentCalculationId, setCurrentCalculationId] = useState(calculationId);
 
   const addItem = useCallback(() => {
     const newItem: Item = {
@@ -96,15 +112,106 @@ export const ExpertCalculator: React.FC = () => {
 
   const totals = calculateExpertTotals(items, persons, assignments, discount, tax);
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const calculationData: ExpertCalculationData = {
+        items,
+        persons,
+        assignments,
+        discountValue,
+        taxValue,
+        discount,
+        tax,
+        subtotal: totals.subtotal,
+        finalTotal: totals.finalTotal,
+        receiptData,
+      };
+
+      if (currentCalculationId) {
+        // Update existing calculation
+        const success = await updateExpertCalculation(currentCalculationId, calculationData);
+        if (success) {
+          alert('Calculation updated successfully!');
+        } else {
+          alert('Failed to update calculation');
+        }
+      } else {
+        // Create new calculation
+        const id = await saveExpertCalculation(calculationData);
+        if (id) {
+          setCurrentCalculationId(id);
+          // Update the URL without full navigation to avoid component remount
+          window.history.replaceState(null, '', `/expert/${id}/edit`);
+          alert(`Calculation saved! Share this link: ${window.location.origin}/expert/${id}`);
+        } else {
+          alert('Failed to save calculation');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving calculation:', error);
+      alert('Failed to save calculation');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleShare = () => {
+    if (currentCalculationId) {
+      const shareUrl = `${window.location.origin}/expert/${currentCalculationId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Share link copied to clipboard!');
+      }).catch(() => {
+        alert(`Share this link: ${shareUrl}`);
+      });
+    } else {
+      alert('Please save the calculation first to get a share link');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
       <div className="max-w-6xl mx-auto">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            to="/"
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-md hover:bg-white/20 transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <Home size={20} />
+            <span className="hidden sm:inline">Home</span>
+          </Link>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              <Save size={16} />
+              <span className="hidden sm:inline">
+                {isSaving ? 'Saving...' : currentCalculationId ? 'Update' : 'Save'}
+              </span>
+            </button>
+            
+            <button
+              onClick={handleShare}
+              disabled={!currentCalculationId}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              <Share2 size={16} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
             Expert Calculator
           </h1>
           <p className="text-white/80">
-            {receiptData ? `Receipt: ${receiptData.transaction_id}` : 'Drag & drop items and assign to people'}
+            {receiptData ? `Receipt: ${receiptData.transaction_id}` : currentCalculationId ? 'Editing saved calculation' : 'Drag & drop items and assign to people'}
           </p>
           {receiptData && (
             <div className="mt-2 text-sm text-white/60">
@@ -112,6 +219,7 @@ export const ExpertCalculator: React.FC = () => {
             </div>
           )}
         </div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Items Section */}
@@ -166,27 +274,33 @@ export const ExpertCalculator: React.FC = () => {
             <div className="mt-6 space-y-4 pt-4 border-t border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Total Discount
+                  Total Discount: {new Intl.NumberFormat('id-ID').format(Math.round(discount))}
                 </label>
                 <input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(Number(e.target.value) || 0)}
+                  type="text"
+                  value={discountValue}
+                  onChange={(e) => handleDiscountChange(e.target.value)}
+                  placeholder="10000+5000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
-                  placeholder="0"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter discount amounts like 10000+5000
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax & Shipping
+                  Tax & Shipping: {new Intl.NumberFormat('id-ID').format(Math.round(tax))}
                 </label>
                 <input
-                  type="number"
-                  value={tax}
-                  onChange={(e) => setTax(Number(e.target.value) || 0)}
+                  type="text"
+                  value={taxValue}
+                  onChange={(e) => handleTaxChange(e.target.value)}
+                  placeholder="7000+3000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
-                  placeholder="0"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter tax and shipping like 7000+3000
+                </p>
               </div>
             </div>
           </div>

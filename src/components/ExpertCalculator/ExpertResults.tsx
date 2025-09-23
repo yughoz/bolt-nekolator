@@ -36,10 +36,10 @@ export const ExpertResults: React.FC<ExpertResultsProps> = ({
               
               <div className="text-right">
                 <div className="text-lg font-semibold text-orange-600">
-                  {new Intl.NumberFormat('id-ID').format(personTotal)}
+                  {new Intl.NumberFormat('id-ID').format(Math.round(personTotal))}
                 </div>
                 <div className="text-xs text-gray-500">
-                  Items: {new Intl.NumberFormat('id-ID').format(totals.personItemTotals[person.id] || 0)}
+                  Items: {new Intl.NumberFormat('id-ID').format(Math.round(totals.personItemTotals[person.id] || 0))}
                 </div>
               </div>
             </div>
@@ -50,25 +50,25 @@ export const ExpertResults: React.FC<ExpertResultsProps> = ({
           <div className="space-y-2 text-sm text-gray-600 mb-3">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>{new Intl.NumberFormat('id-ID').format(totals.subtotal)}</span>
+              <span>{new Intl.NumberFormat('id-ID').format(Math.round(totals.subtotal))}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between">
                 <span>Discount:</span>
-                <span>-{new Intl.NumberFormat('id-ID').format(discount)}</span>
+                <span>-{new Intl.NumberFormat('id-ID').format(Math.round(discount))}</span>
               </div>
             )}
             {tax > 0 && (
               <div className="flex justify-between">
                 <span>Tax & Shipping:</span>
-                <span>{new Intl.NumberFormat('id-ID').format(tax)}</span>
+                <span>{new Intl.NumberFormat('id-ID').format(Math.round(tax))}</span>
               </div>
             )}
           </div>
           
           <div className="flex justify-between items-center text-xl font-bold text-orange-600">
             <span>Total Final:</span>
-            <span>{new Intl.NumberFormat('id-ID').format(totals.finalTotal)}</span>
+            <span>{new Intl.NumberFormat('id-ID').format(Math.round(totals.finalTotal))}</span>
           </div>
         </div>
       </div>

@@ -6,6 +6,8 @@ import { ReceiptUpload } from './components/ReceiptUpload/ReceiptUpload';
 import { ExpertCalculator } from './components/ExpertCalculator/ExpertCalculator';
 import { ViewCalculation } from './components/ViewCalculation';
 import { EditCalculation } from './components/EditCalculation';
+import { ViewExpertCalculation } from './components/ViewExpertCalculation';
+import { EditExpertCalculation } from './components/EditExpertCalculation';
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         <Route path="/expert" element={<ExpertCalculator />} />
         <Route path="/:id" element={<ViewCalculation />} />
         <Route path="/:id/insert" element={<EditCalculation />} />
+        <Route path="/expert/:id" element={<ViewExpertCalculation />} />
+        <Route path="/expert/:id/edit" element={<EditExpertCalculation />} />
       </Routes>
     </Router>
   );
