@@ -7,24 +7,37 @@ import { PersonAssignment } from './PersonAssignment';
 import { ExpertResults } from './ExpertResults';
 import type { Item, Person, Assignment } from '../../types/expert';
 import { calculateExpertTotals } from '../../utils/expertCalculations';
+import { saveExpertCalculation, updateExpertCalculation } from '../../services/expertCalculationService';
+import type { ExpertCalculationData } from '../../services/expertCalculationService';
 
-export const ExpertCalculator: React.FC = () => {
+interface ExpertCalculatorProps {
+  calculationId?: string;
+  initialData?: ExpertCalculationData;
+}
+
+export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
+  calculationId,
+  initialData,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   
   // Get initial data from receipt upload if available
-  const initialData = location.state;
+  const locationData = location.state;
+  const dataToUse = initialData || locationData;
   
   const [items, setItems] = useState<Item[]>(
-    initialData?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
+    dataToUse?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
   );
   const [persons, setPersons] = useState<Person[]>([
-    { id: '1', name: '', color: '#8B5CF6' }
+    dataToUse?.persons || [{ id: '1', name: '', color: '#8B5CF6' }]
   ]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [discount, setDiscount] = useState(initialData?.discount || 0);
-  const [tax, setTax] = useState(initialData?.tax || 0);
-  const [receiptData, setReceiptData] = useState(initialData?.receiptData || null);
+  const [assignments, setAssignments] = useState<Assignment[]>(dataToUse?.assignments || []);
+  const [discount, setDiscount] = useState(dataToUse?.discount || 0);
+  const [tax, setTax] = useState(dataToUse?.tax || 0);
+  const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentCalculationId, setCurrentCalculationId] = useState(calculationId);
 
   const addItem = useCallback(() => {
     const newItem: Item = {
@@ -96,6 +109,61 @@ export const ExpertCalculator: React.FC = () => {
 
   const totals = calculateExpertTotals(items, persons, assignments, discount, tax);
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const calculationData: ExpertCalculationData = {
+        items,
+        persons,
+        assignments,
+        discount,
+        tax,
+        subtotal: totals.subtotal,
+        finalTotal: totals.finalTotal,
+        receiptData,
+      };
+
+      if (currentCalculationId) {
+        // Update existing calculation
+        const success = await updateExpertCalculation(currentCalculationId, calculationData);
+        if (success) {
+          alert('Calculation updated successfully!');
+        } else {
+          alert('Failed to update calculation');
+        }
+      } else {
+        // Create new calculation
+        const id = await saveExpertCalculation(calculationData);
+        if (id) {
+          setCurrentCalculationId(id);
+          // Navigate to the edit URL
+          navigate(`/expert/${id}/edit`);
+          alert(`Calculation saved! Share this link: ${window.location.origin}/expert/${id}`);
+        } else {
+          alert('Failed to save calculation');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving calculation:', error);
+      alert('Failed to save calculation');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleShare = () => {
+    if (currentCalculationId) {
+      const shareUrl = `${window.location.origin}/expert/${currentCalculationId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Share link copied to clipboard!');
+      }).catch(() => {
+        alert(`Share this link: ${shareUrl}`);
+      });
+    } else {
+      alert('Please save the calculation first to get a share link');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
       <div className="max-w-6xl mx-auto">
@@ -104,13 +172,34 @@ export const ExpertCalculator: React.FC = () => {
             Expert Calculator
           </h1>
           <p className="text-white/80">
-            {receiptData ? `Receipt: ${receiptData.transaction_id}` : 'Drag & drop items and assign to people'}
+            {receiptData ? `Receipt: ${receiptData.transaction_id}` : currentCalculationId ? 'Editing saved calculation' : 'Drag & drop items and assign to people'}
           </p>
           {receiptData && (
             <div className="mt-2 text-sm text-white/60">
               {receiptData.transaction_date} • {receiptData.customer_name}
             </div>
           )}
+        </div>
+
+        {/* Save and Share buttons */}
+        <div className="flex justify-center gap-3 mb-6">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            <Save size={16} />
+            {isSaving ? 'Saving...' : currentCalculationId ? 'Update' : 'Save'}
+          </button>
+          
+          <button
+            onClick={handleShare}
+            disabled={!currentCalculationId}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            <Share2 size={16} />
+            Share
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
