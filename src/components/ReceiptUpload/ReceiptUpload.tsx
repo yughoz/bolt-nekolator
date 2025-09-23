@@ -92,10 +92,26 @@ export const ReceiptUpload: React.FC = () => {
         throw new Error('Receipt upload API URL is not configured. Please check your environment variables.');
       }
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        body: formData,
-      });
+      // Check for mixed content issues
+      const currentProtocol = window.location.protocol;
+      const apiProtocol = apiUrl.startsWith('https://') ? 'https:' : 'http:';
+      
+      if (currentProtocol === 'https:' && apiProtocol === 'http:') {
+        throw new Error('Mixed content error: Cannot make HTTP requests from HTTPS page. Please use HTTPS API endpoint or run dev server on HTTP.');
+      }
+      let response;
+      try {
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          body: formData,
+          mode: 'cors',
+        });
+      } catch (fetchError) {
+        if (fetchError instanceof TypeError && fetchError.message === 'Failed to fetch') {
+          throw new Error(`Network error: Cannot reach ${apiUrl}. This could be due to:\n• Server is offline or unreachable\n• CORS policy blocking the request\n• Mixed content (HTTPS→HTTP) blocking\n• Network connectivity issues`);
+        }
+        throw fetchError;
+      }
 
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.statusText}`);
