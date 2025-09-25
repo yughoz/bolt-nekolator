@@ -34,8 +34,8 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
     dataToUse?.persons || [{ id: '1', name: '', color: '#8B5CF6' }]
   ]);
   const [assignments, setAssignments] = useState<Assignment[]>(dataToUse?.assignments || []);
-  const [discountValue, setDiscountValue] = useState('');
-  const [taxValue, setTaxValue] = useState('');
+  const [discountValue, setDiscountValue] = useState(dataToUse?.discountValue || '');
+  const [taxValue, setTaxValue] = useState(dataToUse?.taxValue || '');
   const [discount, setDiscount] = useState(dataToUse?.discount || 0);
   const [tax, setTax] = useState(dataToUse?.tax || 0);
   const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
