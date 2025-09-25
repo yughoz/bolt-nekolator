@@ -97,9 +97,67 @@ cp .env.example .env
 # Fill in your Supabase credentials
 ```
 
-3. Start development server:
+3. Start Supabase locally (if using local development):
+```bash
+# Install Supabase CLI first: https://supabase.com/docs/guides/cli
+supabase start
+```
+
+4. Start development server:
 ```bash
 npm run dev
+```
+
+## Local Development with Supabase
+
+If you're running Supabase locally, the Edge Functions will be available at:
+- **Base URL**: `http://localhost:54321`
+- **Functions URL**: `http://localhost:54321/functions/v1/`
+- **Receipt API**: `http://localhost:54321/functions/v1/receipt-api`
+
+Make sure to update your `.env` file:
+```bash
+VITE_SUPABASE_URL=http://localhost:54321
+VITE_SUPABASE_ANON_KEY=your-local-anon-key-from-supabase-start
+```
+
+### Testing the API locally:
+
+```bash
+curl -X POST "http://localhost:54321/functions/v1/receipt-api" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_LOCAL_ANON_KEY" \
+  -d '{
+    "transaction_id": "F-2964671742",
+    "transaction_date": "2025-09-03",
+    "customer_name": "Alvian Yusuf",
+    "total_paid": 88200,
+    "billing_amount": 132000,
+    "items": [
+      {
+        "name": "5 Java Aren",
+        "quantity": 1,
+        "unit_price": 88000,
+        "total": 88000
+      }
+    ],
+    "fees": [
+      {
+        "type": "Biaya penanganan dan pengiriman",
+        "amount": 19000
+      }
+    ],
+    "total_fees": 19000,
+    "discounts": [
+      {
+        "type": "Diskon PLUS",
+        "amount": 10000
+      }
+    ],
+    "total_discounts": 10000,
+    "subtotal": 132000,
+    "final_total": 88200
+  }'
 ```
 
 ## Database Schema
