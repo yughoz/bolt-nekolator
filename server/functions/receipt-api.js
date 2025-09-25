@@ -1,29 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl) {
-  console.error('❌ Missing VITE_SUPABASE_URL environment variable');
-  console.log('Please check your .env file and make sure VITE_SUPABASE_URL is set');
-}
-
-if (!supabaseServiceKey) {
-  console.error('❌ Missing Supabase key environment variable');
-  console.log('Please check your .env file and make sure either SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_ANON_KEY is set');
-}
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Cannot initialize Supabase client without proper credentials');
-  console.log('📝 Please ensure your .env file contains:');
-  console.log('   VITE_SUPABASE_URL=your_supabase_url');
-  console.log('   VITE_SUPABASE_ANON_KEY=your_anon_key');
-  console.log('   # Optional: SUPABASE_SERVICE_ROLE_KEY=your_service_role_key');
-}
-
-const supabase = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
-
 // Helper function to determine item category based on name
 function determineCategory(itemName) {
   const name = itemName.toLowerCase();
@@ -45,13 +21,19 @@ function determineCategory(itemName) {
 
 const receiptApiHandler = async (req, res) => {
   try {
+    // Initialize Supabase client here (after env vars are loaded)
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
     // Check if Supabase client is initialized
-    if (!supabase) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return res.status(500).json({
-        error: 'Supabase client not initialized',
+        error: 'Missing Supabase credentials',
         details: 'Missing environment variables. Please check your .env file.'
       });
     }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log('📨 Received receipt data:', JSON.stringify(req.body, null, 2));
 

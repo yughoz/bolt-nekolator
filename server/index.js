@@ -1,12 +1,9 @@
 import dotenv from 'dotenv';
-
-// Load environment variables FIRST, before any other imports
-dotenv.config();
-
 import express from 'express';
 import cors from 'cors';
-import receiptApiHandler from './functions/receipt-api.js';
-import processReceiptHandler from './functions/process-receipt.js';
+
+// Load environment variables FIRST
+dotenv.config();
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -15,6 +12,10 @@ console.log('🔍 Environment Variables Check:');
 console.log('VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? '✅ SET' : '❌ MISSING');
 console.log('VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY ? '✅ SET' : '❌ MISSING');
 console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ SET' : '❌ MISSING');
+
+// Import handlers AFTER environment variables are loaded
+const { default: receiptApiHandler } = await import('./functions/receipt-api.js');
+const { default: processReceiptHandler } = await import('./functions/process-receipt.js');
 
 // Middleware
 app.use(cors());
