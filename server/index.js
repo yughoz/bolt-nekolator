@@ -5,10 +5,16 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import receiptApiHandler from './functions/receipt-api.js';
 import processReceiptHandler from './functions/process-receipt.js';
+
+const app = express();
+const PORT = process.env.SERVER_PORT || 3001;
+
+console.log('🔍 Environment Variables Check:');
+console.log('VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? '✅ SET' : '❌ MISSING');
+console.log('VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY ? '✅ SET' : '❌ MISSING');
+console.log('SUPABASE_SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ SET' : '❌ MISSING');
 
 // Middleware
 app.use(cors());
