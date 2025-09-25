@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -108,4 +108,4 @@ const processReceiptHandler = async (req, res) => {
   }
 };
 
-module.exports = processReceiptHandler;
+export default processReceiptHandler;

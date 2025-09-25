@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -152,4 +152,4 @@ const receiptApiHandler = async (req, res) => {
   }
 };
 
-module.exports = receiptApiHandler;
+export default receiptApiHandler;

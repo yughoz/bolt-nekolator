@@ -1,6 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import receiptApiHandler from './functions/receipt-api.js';
+import processReceiptHandler from './functions/process-receipt.js';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -8,10 +12,6 @@ const PORT = process.env.SERVER_PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Import route handlers
-const receiptApiHandler = require('./functions/receipt-api');
-const processReceiptHandler = require('./functions/process-receipt');
 
 // Routes
 app.post('/functions/v1/receipt-api', receiptApiHandler);
