@@ -71,7 +71,41 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const receiptData: ReceiptData = await req.json();
+    let receiptData: ReceiptData;
+    try {
+      receiptData = await req.json();
+    } catch (parseError) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Invalid JSON in request body",
+          details: parseError instanceof Error ? parseError.message : "JSON parse failed"
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
+    }
+
+    // Validate required fields
+    if (!receiptData.transaction_id || !receiptData.items || !Array.isArray(receiptData.items)) {
+      return new Response(
+        JSON.stringify({ 
+          error: "Missing required fields",
+          details: "transaction_id and items array are required"
+        }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders,
+          },
+        }
+      );
+    }
 
     // Convert receipt items to expert calculator format
     const items: Item[] = receiptData.items.flatMap((item, index) => {
