@@ -4,10 +4,32 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Check if required environment variables are present before creating client
+if (!supabaseUrl) {
+  console.error('❌ Missing VITE_SUPABASE_URL environment variable');
+  console.error('Please check your .env file and make sure VITE_SUPABASE_URL is set');
+}
+
+if (!supabaseServiceKey) {
+  console.error('❌ Missing Supabase key environment variable');
+  console.error('Please check your .env file and make sure either SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_ANON_KEY is set');
+}
+
+let supabase = null;
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+}
 
 const processReceiptHandler = async (req, res) => {
   try {
+    // Check if Supabase client is initialized
+    if (!supabase) {
+      return res.status(500).json({ 
+        error: 'Supabase client not initialized',
+        details: 'Missing required environment variables. Please check your .env file.'
+      });
+    }
+
     console.log('🔄 Processing receipt data:', JSON.stringify(req.body, null, 2));
 
     const receiptData = req.body;
