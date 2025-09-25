@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Upload, Camera, FileImage, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { processReceiptData } from '../../api/processReceipt';
 
 interface ReceiptItem {
   name: string;
@@ -40,6 +41,8 @@ export const ReceiptUpload: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isProcessingJson, setIsProcessingJson] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
 
   const processReceiptData = (data: ReceiptData) => {
     // Convert receipt data to expert calculator format
@@ -194,6 +197,38 @@ export const ReceiptUpload: React.FC = () => {
     navigate('/expert');
   };
 
+  const handleJsonSubmit = async () => {
+    if (!jsonInput.trim()) {
+      setUploadStatus('error');
+      setErrorMessage('Please enter JSON data');
+      return;
+    }
+
+    setIsProcessingJson(true);
+    setUploadStatus('idle');
+    setErrorMessage('');
+
+    try {
+      const data = JSON.parse(jsonInput);
+      const result = await processReceiptData(data);
+      
+      if (result.success) {
+        setUploadStatus('success');
+        setTimeout(() => {
+          navigate(`/expert/${result.calculation_id}/edit`);
+        }, 1000);
+      } else {
+        setUploadStatus('error');
+        setErrorMessage(result.error || 'Failed to process receipt data');
+      }
+    } catch (error) {
+      setUploadStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : 'Invalid JSON format');
+    } finally {
+      setIsProcessingJson(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
       <div className="max-w-2xl mx-auto">
@@ -298,6 +333,25 @@ export const ReceiptUpload: React.FC = () => {
                 Choose File
               </div>
             </label>
+          </div>
+
+          {/* JSON Input Section */}
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-medium text-gray-900 mb-3">Or paste JSON data directly:</h3>
+            <textarea
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+              placeholder='{"transaction_id": "F-2964671742", "items": [...], ...}'
+              className="w-full h-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono"
+              disabled={isUploading || isProcessingJson}
+            />
+            <button
+              onClick={handleJsonSubmit}
+              disabled={isUploading || isProcessingJson || !jsonInput.trim()}
+              className="mt-3 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 text-sm"
+            >
+              {isProcessingJson ? 'Processing...' : 'Process JSON'}
+            </button>
           </div>
 
           {/* Instructions */}
