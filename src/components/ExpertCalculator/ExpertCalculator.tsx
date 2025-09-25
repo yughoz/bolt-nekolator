@@ -30,9 +30,9 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
   const [items, setItems] = useState<Item[]>(
     dataToUse?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
   );
-  const [persons, setPersons] = useState<Person[]>([
+  const [persons, setPersons] = useState<Person[]>(
     dataToUse?.persons || [{ id: '1', name: '', color: '#8B5CF6' }]
-  ]);
+  );
   const [assignments, setAssignments] = useState<Assignment[]>(dataToUse?.assignments || []);
   const [discountValue, setDiscountValue] = useState(dataToUse?.discountValue || '');
   const [taxValue, setTaxValue] = useState(dataToUse?.taxValue || '');
@@ -41,6 +41,17 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
   const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
   const [isSaving, setIsSaving] = useState(false);
   const [currentCalculationId, setCurrentCalculationId] = useState(calculationId);
+
+  // Debug logging to see what data we're getting
+  React.useEffect(() => {
+    console.log('ExpertCalculator data debug:', {
+      dataToUse,
+      discountValue: dataToUse?.discountValue,
+      taxValue: dataToUse?.taxValue,
+      discount: dataToUse?.discount,
+      tax: dataToUse?.tax
+    });
+  }, [dataToUse]);
 
   const addItem = useCallback(() => {
     const newItem: Item = {
