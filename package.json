@@ -8,12 +8,18 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "api": "node -r ts-node/register src/api/server.ts",
-    "api:dev": "nodemon -r ts-node/register src/api/server.ts"
+    "api:build": "tsc -p tsconfig.api.json",
+    "api": "npm run api:build && node dist-api/api/server.js",
+    "api:dev": "nodemon --exec \"npm run api:build && node dist-api/api/server.js\" --watch src/api --ext ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
     "@supabase/supabase-js": "^2.56.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

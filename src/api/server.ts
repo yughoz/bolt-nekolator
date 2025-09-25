@@ -1,6 +1,7 @@
-import express from 'express';
-import cors from 'cors';
-import { ReceiptApiHandler } from './receiptApi';
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const { ReceiptApiHandler } = require('./receiptApi');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
