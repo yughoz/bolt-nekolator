@@ -30,17 +30,28 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
   const [items, setItems] = useState<Item[]>(
     dataToUse?.items || [{ id: '1', name: '', price: 0, category: 'food' }]
   );
-  const [persons, setPersons] = useState<Person[]>([
+  const [persons, setPersons] = useState<Person[]>(
     dataToUse?.persons || [{ id: '1', name: '', color: '#8B5CF6' }]
-  ]);
+  );
   const [assignments, setAssignments] = useState<Assignment[]>(dataToUse?.assignments || []);
-  const [discountValue, setDiscountValue] = useState('');
-  const [taxValue, setTaxValue] = useState('');
+  const [discountValue, setDiscountValue] = useState(dataToUse?.discountValue || '');
+  const [taxValue, setTaxValue] = useState(dataToUse?.taxValue || '');
   const [discount, setDiscount] = useState(dataToUse?.discount || 0);
   const [tax, setTax] = useState(dataToUse?.tax || 0);
   const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
   const [isSaving, setIsSaving] = useState(false);
   const [currentCalculationId, setCurrentCalculationId] = useState(calculationId);
+
+  // Debug logging to see what data we're getting
+  React.useEffect(() => {
+    console.log('ExpertCalculator data debug:', {
+      dataToUse,
+      discountValue: dataToUse?.discountValue,
+      taxValue: dataToUse?.taxValue,
+      discount: dataToUse?.discount,
+      tax: dataToUse?.tax
+    });
+  }, [dataToUse]);
 
   const addItem = useCallback(() => {
     const newItem: Item = {
@@ -279,7 +290,11 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                 <input
                   type="text"
                   value={discountValue}
-                  onChange={(e) => handleDiscountChange(e.target.value)}
+                  onChange={(e) => {
+                    setDiscountValue(e.target.value);
+                    const result = parseAdditionString(e.target.value);
+                    setDiscount(result);
+                  }}
                   placeholder="10000+5000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                 />
@@ -294,7 +309,11 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                 <input
                   type="text"
                   value={taxValue}
-                  onChange={(e) => handleTaxChange(e.target.value)}
+                  onChange={(e) => {
+                    setTaxValue(e.target.value);
+                    const result = parseAdditionString(e.target.value);
+                    setTax(result);
+                  }}
                   placeholder="7000+3000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                 />
