@@ -86,6 +86,39 @@ Authorization: Bearer YOUR_SUPABASE_ANON_KEY
 
 ## Development
 
+### Option 1: With Local API Server (No Supabase CLI needed)
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Set up environment variables:
+```bash
+cp .env.example .env
+# Fill in your Supabase credentials
+```
+
+3. Start both frontend and API server:
+```bash
+npm run dev:all
+```
+
+Or start them separately:
+```bash
+# Terminal 1 - Frontend
+npm run dev
+
+# Terminal 2 - API Server
+npm run dev:server
+```
+
+The API will be available at:
+- **Receipt API**: `http://localhost:3001/functions/v1/receipt-api`
+- **Process Receipt**: `http://localhost:3001/functions/v1/process-receipt`
+
+### Option 2: With Supabase CLI
+
 1. Install dependencies:
 ```bash
 npm install
@@ -106,6 +139,46 @@ supabase start
 4. Start development server:
 ```bash
 npm run dev
+```
+
+## Testing the Local API
+
+Test the receipt API with curl:
+
+```bash
+curl -X POST "http://localhost:3001/functions/v1/receipt-api" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction_id": "F-2964671742",
+    "transaction_date": "2025-09-03",
+    "customer_name": "Alvian Yusuf",
+    "total_paid": 88200,
+    "billing_amount": 132000,
+    "items": [
+      {
+        "name": "5 Java Aren",
+        "quantity": 1,
+        "unit_price": 88000,
+        "total": 88000
+      }
+    ],
+    "fees": [
+      {
+        "type": "Biaya penanganan dan pengiriman",
+        "amount": 19000
+      }
+    ],
+    "total_fees": 19000,
+    "discounts": [
+      {
+        "type": "Diskon PLUS",
+        "amount": 10000
+      }
+    ],
+    "total_discounts": 10000,
+    "subtotal": 132000,
+    "final_total": 88200
+  }'
 ```
 
 ## Local Development with Supabase

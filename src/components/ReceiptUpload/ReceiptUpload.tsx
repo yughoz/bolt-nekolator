@@ -92,28 +92,35 @@ export const ReceiptUpload: React.FC = () => {
       const apiUrl = import.meta.env.VITE_RECEIPT_UPLOAD_API_URL;
       
       if (!apiUrl) {
-        throw new Error('Receipt upload API URL is not configured. Please check your environment variables.');
-      }
-
-      // Check for mixed content issues
-      const currentProtocol = window.location.protocol;
-      const apiProtocol = apiUrl.startsWith('https://') ? 'https:' : 'http:';
-      
-      if (currentProtocol === 'https:' && apiProtocol === 'http:') {
-        throw new Error('Mixed content error: Cannot make HTTP requests from HTTPS page. Please use HTTPS API endpoint or run dev server on HTTP.');
-      }
-      let response;
-      try {
-        response = await fetch(apiUrl, {
+        // Fallback to local server if no external API is configured
+        const localApiUrl = `http://localhost:${import.meta.env.VITE_SERVER_PORT || 3001}/functions/v1/receipt-api`;
+        console.log('Using local API server:', localApiUrl);
+        response = await fetch(localApiUrl, {
           method: 'POST',
           body: formData,
           mode: 'cors',
         });
-      } catch (fetchError) {
-        if (fetchError instanceof TypeError && fetchError.message === 'Failed to fetch') {
-          throw new Error(`Network error: Cannot reach ${apiUrl}. This could be due to:\n• Server is offline or unreachable\n• CORS policy blocking the request\n• Mixed content (HTTPS→HTTP) blocking\n• Network connectivity issues`);
+      } else {
+        // Check for mixed content issues
+        const currentProtocol = window.location.protocol;
+        const apiProtocol = apiUrl.startsWith('https://') ? 'https:' : 'http:';
+        
+        if (currentProtocol === 'https:' && apiProtocol === 'http:') {
+          throw new Error('Mixed content error: Cannot make HTTP requests from HTTPS page. Please use HTTPS API endpoint or run dev server on HTTP.');
         }
-        throw fetchError;
+        
+        try {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            body: formData,
+            mode: 'cors',
+          });
+        } catch (fetchError) {
+          if (fetchError instanceof TypeError && fetchError.message === 'Failed to fetch') {
+            throw new Error(`Network error: Cannot reach ${apiUrl}. This could be due to:\n• Server is offline or unreachable\n• CORS policy blocking the request\n• Mixed content (HTTPS→HTTP) blocking\n• Network connectivity issues`);
+          }
+          throw fetchError;
+        }
       }
 
       if (!response.ok) {

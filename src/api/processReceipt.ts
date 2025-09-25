@@ -49,20 +49,25 @@ interface ProcessReceiptResponse {
 
 export const processReceiptData = async (receiptData: ReceiptData): Promise<ProcessReceiptResponse> => {
   try {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    // Try local server first, then fallback to Supabase
+    const localServerPort = import.meta.env.VITE_SERVER_PORT || '3001';
+    const localApiUrl = `http://localhost:${localServerPort}/functions/v1/receipt-api`;
     
-    if (!supabaseUrl) {
-      throw new Error('Supabase URL is not configured');
-    }
+    let apiUrl = localApiUrl;
+    let headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
 
-    const apiUrl = `${supabaseUrl}/functions/v1/receipt-api`;
+    // Check if we should use Supabase instead
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (supabaseUrl && !supabaseUrl.includes('localhost')) {
+      apiUrl = `${supabaseUrl}/functions/v1/receipt-api`;
+      headers['Authorization'] = `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`;
+    }
     
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      },
+      headers,
       body: JSON.stringify(receiptData),
     });
 
