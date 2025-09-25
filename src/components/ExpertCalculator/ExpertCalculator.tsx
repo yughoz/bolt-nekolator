@@ -279,7 +279,11 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                 <input
                   type="text"
                   value={discountValue}
-                  onChange={(e) => handleDiscountChange(e.target.value)}
+                  onChange={(e) => {
+                    setDiscountValue(e.target.value);
+                    const result = parseAdditionString(e.target.value);
+                    setDiscount(result);
+                  }}
                   placeholder="10000+5000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                 />
@@ -294,7 +298,11 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                 <input
                   type="text"
                   value={taxValue}
-                  onChange={(e) => handleTaxChange(e.target.value)}
+                  onChange={(e) => {
+                    setTaxValue(e.target.value);
+                    const result = parseAdditionString(e.target.value);
+                    setTax(result);
+                  }}
                   placeholder="7000+3000"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                 />
