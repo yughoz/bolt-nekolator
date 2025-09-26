@@ -130,7 +130,7 @@ const receiptApiHandler = async (req, res) => {
     console.log('✅ Calculation saved with ID:', result.id);
 
     // Return success response with calculation details
-    const baseUrl = req.get('origin') || `http://localhost:${process.env.VITE_PORT || 5173}`;
+    const baseUrl = req.get('origin') || req.get('host') ? `${req.protocol}://${req.get('host')}` : `http://localhost:${process.env.VITE_PORT || 5173}`;
     const calculationUrl = `${baseUrl}/expert/${result.id}`;
 
     const response = {

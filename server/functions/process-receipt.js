@@ -99,7 +99,7 @@ const processReceiptHandler = async (req, res) => {
     console.log('✅ Calculation saved with ID:', result.id);
 
     // Return the URL for accessing the calculation
-    const baseUrl = req.get('origin') || `http://localhost:${process.env.VITE_PORT || 5173}`;
+    const baseUrl = req.get('origin') || req.get('host') ? `${req.protocol}://${req.get('host')}` : `http://localhost:${process.env.VITE_PORT || 5173}`;
     const calculationUrl = `${baseUrl}/expert/${result.id}`;
 
     const response = {

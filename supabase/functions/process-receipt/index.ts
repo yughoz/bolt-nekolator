@@ -186,7 +186,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Return the URL for accessing the calculation
-    const baseUrl = req.headers.get('origin') || 'https://your-app-domain.com';
+    const baseUrl = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 'https://your-app-domain.com';
     const calculationUrl = `${baseUrl}/expert/${result.id}`;
 
     return new Response(
