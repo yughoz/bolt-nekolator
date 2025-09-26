@@ -90,12 +90,17 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Generate transaction_id if missing
+    if (!receiptData.transaction_id) {
+      receiptData.transaction_id = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+
     // Validate required fields
-    if (!receiptData.transaction_id || !receiptData.items || !Array.isArray(receiptData.items)) {
+    if (!receiptData.items || !Array.isArray(receiptData.items)) {
       return new Response(
         JSON.stringify({ 
           error: "Missing required fields",
-          details: "transaction_id and items array are required"
+          details: "items array is required"
         }),
         {
           status: 400,
@@ -196,7 +201,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Return success response with calculation details
-    const baseUrl = req.headers.get('origin') || 'https://your-app-domain.com';
+    const baseUrl = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 'https://your-app-domain.com';
     const calculationUrl = `${baseUrl}/expert/${result.id}`;
 
     return new Response(

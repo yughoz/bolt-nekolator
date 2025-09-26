@@ -39,11 +39,17 @@ const receiptApiHandler = async (req, res) => {
 
     const receiptData = req.body;
 
+    // Generate transaction_id if missing
+    if (!receiptData.transaction_id) {
+      receiptData.transaction_id = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      console.log('🆔 Generated transaction_id:', receiptData.transaction_id);
+    }
+
     // Validate required fields
-    if (!receiptData.transaction_id || !receiptData.items || !Array.isArray(receiptData.items)) {
+    if (!receiptData.items || !Array.isArray(receiptData.items)) {
       return res.status(400).json({ 
         error: "Missing required fields",
-        details: "transaction_id and items array are required"
+        details: "items array is required"
       });
     }
 
@@ -124,7 +130,7 @@ const receiptApiHandler = async (req, res) => {
     console.log('✅ Calculation saved with ID:', result.id);
 
     // Return success response with calculation details
-    const baseUrl = req.get('origin') || `http://localhost:${process.env.VITE_PORT || 5173}`;
+    const baseUrl = req.get('origin') || req.get('host') ? `${req.protocol}://${req.get('host')}` : `http://localhost:${process.env.VITE_PORT || 5173}`;
     const calculationUrl = `${baseUrl}/expert/${result.id}`;
 
     const response = {
