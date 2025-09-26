@@ -49,6 +49,26 @@ export const createShortLink = async (
       .eq('id', result.id);
 
     if (updateError) {
+      // Handle unique constraint violation
+      if (updateError.code === '23505') { // Unique constraint violation
+        // Check if there's an existing short link with this short code
+        const { data: existingLink, error: queryError } = await supabase
+          .from('short_links')
+          .select('calculation_id, calculation_type')
+          .eq('short_code', shortCode)
+          .single();
+
+        if (!queryError && existingLink) {
+          // If it's for the same calculation, delete our temporary entry and return the existing short code
+          if (existingLink.calculation_id === calculationId && existingLink.calculation_type === calculationType) {
+            await supabase
+              .from('short_links')
+              .delete()
+              .eq('id', result.id);
+            return shortCode;
+          }
+        }
+      }
       console.error('Error updating short code:', updateError);
       return null;
     }
