@@ -57,7 +57,7 @@ export const createShortLink = async (
           .from('short_links')
           .select('calculation_id, calculation_type')
           .eq('short_code', shortCode)
-          .single();
+          .maybeSingle();
 
         if (!queryError && existingLink) {
           // If it's for the same calculation, delete our temporary entry and return the existing short code
