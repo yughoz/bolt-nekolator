@@ -5,6 +5,7 @@ import { getExpertCalculation } from '../services/expertCalculationService';
 import { ExpertResults } from './ExpertCalculator/ExpertResults';
 import { calculateExpertTotals } from '../utils/expertCalculations';
 import type { ExpertCalculationData } from '../services/expertCalculationService';
+import { createShortLink, getExistingShortLink } from '../services/shortLinkService';
 
 export const ViewExpertCalculation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,13 +39,44 @@ export const ViewExpertCalculation: React.FC = () => {
     fetchCalculation();
   }, [id]);
 
-  const handleShare = () => {
-    const shareUrl = window.location.href;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('Share link copied to clipboard!');
-    }).catch(() => {
-      alert(`Share this link: ${shareUrl}`);
-    });
+  const handleShare = async () => {
+    if (!id) return;
+
+    try {
+      // Check if short link already exists
+      let shortCode = await getExistingShortLink(id, 'expert');
+      
+      // Create new short link if doesn't exist
+      if (!shortCode) {
+        shortCode = await createShortLink(id, 'expert');
+      }
+
+      if (shortCode) {
+        const shareUrl = `${window.location.origin}/s/${shortCode}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Short link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      } else {
+        // Fallback to current URL
+        const shareUrl = window.location.href;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Share link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      }
+    } catch (error) {
+      console.error('Error creating short link:', error);
+      // Fallback to current URL
+      const shareUrl = window.location.href;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Share link copied to clipboard!');
+      }).catch(() => {
+        alert(`Share this link: ${shareUrl}`);
+      });
+    }
   };
 
   if (loading) {

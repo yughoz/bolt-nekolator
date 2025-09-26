@@ -129,13 +129,41 @@ const receiptApiHandler = async (req, res) => {
 
     console.log('✅ Calculation saved with ID:', result.id);
 
+    // Create short link
+    let shortCode = null;
+    try {
+      const shortLinkResult = await supabase
+        .from('short_links')
+        .insert({
+          calculation_type: 'expert',
+          calculation_id: result.id,
+          short_code: 'temp',
+        })
+        .select('id')
+        .single();
+
+      if (!shortLinkResult.error) {
+        // Generate short code from auto-increment ID (base-36)
+        shortCode = shortLinkResult.data.id.toString(36);
+        
+        // Update with actual short code
+        await supabase
+          .from('short_links')
+          .update({ short_code: shortCode })
+          .eq('id', shortLinkResult.data.id);
+      }
+    } catch (shortLinkError) {
+      console.warn('Failed to create short link:', shortLinkError);
+    }
+
     // Return success response with calculation details
     const baseUrl = req.get('origin') || req.get('host') ? `${req.protocol}://${req.get('host')}` : `http://localhost:${process.env.VITE_PORT || 5173}`;
-    const calculationUrl = `${baseUrl}/expert/${result.id}`;
+    const calculationUrl = shortCode ? `${baseUrl}/s/${shortCode}` : `${baseUrl}/expert/${result.id}`;
 
     const response = {
       success: true,
       calculation_id: result.id,
+      short_code: shortCode,
       url: calculationUrl,
       edit_url: `${baseUrl}/expert/${result.id}/edit`,
       message: 'Receipt processed and calculation created successfully',
