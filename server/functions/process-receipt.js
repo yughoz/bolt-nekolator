@@ -116,10 +116,17 @@ const processReceiptHandler = async (req, res) => {
         shortCode = shortLinkResult.data.id.toString(36);
         
         // Update with actual short code
-        await supabase
+        const updateResult = await supabase
           .from('short_links')
           .update({ short_code: shortCode })
           .eq('id', shortLinkResult.data.id);
+        
+        if (updateResult.error) {
+          console.warn('Failed to update short code:', updateResult.error);
+          shortCode = null;
+        } else {
+          console.log('✅ Short link created:', shortCode);
+        }
       }
     } catch (shortLinkError) {
       console.warn('Failed to create short link:', shortLinkError);

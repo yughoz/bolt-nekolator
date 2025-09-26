@@ -184,7 +184,14 @@ export const Calculator: React.FC<CalculatorProps> = ({
         // Update existing calculation
         const success = await updateCalculation(currentCalculationId, calculationData);
         if (success) {
-          alert('Calculation updated successfully!');
+          // Generate short link for updated calculation
+          let shortCode = await getExistingShortLink(currentCalculationId, 'basic');
+          if (!shortCode) {
+            shortCode = await createShortLink(currentCalculationId, 'basic');
+          }
+          
+          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/${currentCalculationId}`;
+          alert(`Calculation updated successfully!\nShare link: ${shareUrl}`);
         } else {
           alert('Failed to update calculation');
         }
@@ -193,9 +200,14 @@ export const Calculator: React.FC<CalculatorProps> = ({
         const id = await saveCalculation(calculationData);
         if (id) {
           setCurrentCalculationId(id);
+          
+          // Generate short link for new calculation
+          const shortCode = await createShortLink(id, 'basic');
+          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/${id}`;
+          
           // Navigate to the edit URL
           navigate(`/${id}/insert`);
-          alert(`Calculation saved! Share this link: ${window.location.origin}/${id}`);
+          alert(`Calculation saved!\nShare link: ${shareUrl}`);
         } else {
           alert('Failed to save calculation');
         }

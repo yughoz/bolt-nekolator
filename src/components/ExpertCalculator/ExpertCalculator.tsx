@@ -144,7 +144,14 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         // Update existing calculation
         const success = await updateExpertCalculation(currentCalculationId, calculationData);
         if (success) {
-          alert('Calculation updated successfully!');
+          // Generate short link for updated calculation
+          let shortCode = await getExistingShortLink(currentCalculationId, 'expert');
+          if (!shortCode) {
+            shortCode = await createShortLink(currentCalculationId, 'expert');
+          }
+          
+          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/expert/${currentCalculationId}`;
+          alert(`Calculation updated successfully!\nShare link: ${shareUrl}`);
         } else {
           alert('Failed to update calculation');
         }
@@ -153,9 +160,14 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         const id = await saveExpertCalculation(calculationData);
         if (id) {
           setCurrentCalculationId(id);
+          
+          // Generate short link for new calculation
+          const shortCode = await createShortLink(id, 'expert');
+          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/expert/${id}`;
+          
           // Update the URL without full navigation to avoid component remount
           window.history.replaceState(null, '', `/expert/${id}/edit`);
-          alert(`Calculation saved! Share this link: ${window.location.origin}/expert/${id}`);
+          alert(`Calculation saved!\nShare link: ${shareUrl}`);
         } else {
           alert('Failed to save calculation');
         }
