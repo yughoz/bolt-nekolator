@@ -92,7 +92,6 @@ export const createShortLink = async (
         await supabase
           .from('short_links')
           .delete()
-          .eq('id', result.id);
         console.error('Error updating short code:', updateError);
         return null;
       }
