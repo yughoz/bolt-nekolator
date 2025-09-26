@@ -134,7 +134,7 @@ const processReceiptHandler = async (req, res) => {
 
     // Return the URL for accessing the calculation
     const baseUrl = req.get('origin') || req.get('host') ? `${req.protocol}://${req.get('host')}` : `http://localhost:${process.env.VITE_PORT || 5173}`;
-    const calculationUrl = shortCode ? `${baseUrl}/s/${shortCode}` : `${baseUrl}/expert/${result.id}`;
+    const calculationUrl = shortCode ? `${baseUrl}/s/${shortCode}` : `${baseUrl}/expert/${result.id}/edit`;
 
     const response = {
       success: true,

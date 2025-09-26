@@ -206,8 +206,10 @@ export const Calculator: React.FC<CalculatorProps> = ({
           const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/${id}`;
           
           // Navigate to the edit URL
-          navigate(`/${id}/insert`);
-          alert(`Calculation saved!\nShare link: ${shareUrl}`);
+          // Navigate to edit URL with short link if available
+          const editUrl = shortCode ? `/s/${shortCode}` : `/${id}/insert`;
+          navigate(editUrl);
+          alert(`Calculation saved!\nShare link: ${shareUrl}\nEdit link: ${window.location.origin}${editUrl}`);
         } else {
           alert('Failed to save calculation');
         }
