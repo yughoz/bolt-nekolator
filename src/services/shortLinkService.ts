@@ -66,8 +66,8 @@ export const createShortLink = async (
             await supabase
               .from('short_links')
               .delete()
-              .eq('id', result.id)
-              .maybeSingle();
+             .eq('id', result.id)
+             .maybeSingle();
             return shortCode;
           } else {
             // Different calculation has this short code - clean up and return null
@@ -83,8 +83,8 @@ export const createShortLink = async (
           await supabase
             .from('short_links')
             .delete()
-            .eq('id', result.id);
-            .maybeSingle();
+           .eq('id', result.id)
+           .maybeSingle();
           return null;
         }
       } else {
@@ -92,8 +92,8 @@ export const createShortLink = async (
         await supabase
           .from('short_links')
           .delete()
-          .eq('id', result.id)
-          .maybeSingle();
+         .eq('id', result.id)
+         .maybeSingle();
         return null;
       }
     }
