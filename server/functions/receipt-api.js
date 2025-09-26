@@ -132,12 +132,14 @@ const receiptApiHandler = async (req, res) => {
     // Create short link
     let shortCode = null;
     try {
+      // Generate unique temporary short code to avoid collisions
+      const tempShortCode = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const shortLinkResult = await supabase
         .from('short_links')
         .insert({
           calculation_type: 'expert',
           calculation_id: result.id,
-          short_code: 'temp',
+          short_code: tempShortCode,
         })
         .select('id')
         .single();

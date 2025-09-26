@@ -23,13 +23,14 @@ export const createShortLink = async (
   calculationType: 'basic' | 'expert'
 ): Promise<string | null> => {
   try {
-    // First insert without short_code
+    // First insert with unique temporary short_code to avoid collisions
+    const tempShortCode = `temp-${crypto.randomUUID()}`;
     const { data: result, error } = await supabase
       .from('short_links')
       .insert({
         calculation_type: calculationType,
         calculation_id: calculationId,
-        short_code: 'temp', // Temporary value
+        short_code: tempShortCode, // Unique temporary value
       })
       .select('id')
       .single();
