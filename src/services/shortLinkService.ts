@@ -117,8 +117,13 @@ export const resolveShortLink = async (shortCode: string): Promise<{
       .eq('short_code', shortCode)
       .maybeSingle();
 
-    if (error || !data) {
-      console.error('Error resolving short link:', error);
+    if (error) {
+      console.error('Database error resolving short link:', error);
+      return null;
+    }
+
+    if (!data) {
+      console.log('Short link not found:', shortCode);
       return null;
     }
 
