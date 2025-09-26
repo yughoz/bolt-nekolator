@@ -9,6 +9,7 @@ import type { Item, Person, Assignment } from '../../types/expert';
 import { calculateExpertTotals } from '../../utils/expertCalculations';
 import { saveExpertCalculation, updateExpertCalculation } from '../../services/expertCalculationService';
 import type { ExpertCalculationData } from '../../services/expertCalculationService';
+import { createShortLink, getExistingShortLink } from '../../services/shortLinkService';
 import { parseAdditionString } from '../../utils/calculations';
 
 interface ExpertCalculatorProps {
@@ -168,15 +169,49 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
   };
 
   const handleShare = () => {
-    if (currentCalculationId) {
+    handleShareWithShortLink();
+  };
+
+  const handleShareWithShortLink = async () => {
+    if (!currentCalculationId) {
+      alert('Please save the calculation first to get a share link');
+      return;
+    }
+
+    try {
+      // Check if short link already exists
+      let shortCode = await getExistingShortLink(currentCalculationId, 'expert');
+      
+      // Create new short link if doesn't exist
+      if (!shortCode) {
+        shortCode = await createShortLink(currentCalculationId, 'expert');
+      }
+
+      if (shortCode) {
+        const shareUrl = `${window.location.origin}/s/${shortCode}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Short link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      } else {
+        // Fallback to regular link
+        const shareUrl = `${window.location.origin}/expert/${currentCalculationId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Share link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      }
+    } catch (error) {
+      console.error('Error creating short link:', error);
+      // Fallback to regular link
       const shareUrl = `${window.location.origin}/expert/${currentCalculationId}`;
       navigator.clipboard.writeText(shareUrl).then(() => {
         alert('Share link copied to clipboard!');
       }).catch(() => {
         alert(`Share this link: ${shareUrl}`);
       });
-    } else {
-      alert('Please save the calculation first to get a share link');
     }
   };
 

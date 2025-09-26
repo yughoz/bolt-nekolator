@@ -8,6 +8,7 @@ import { ViewCalculation } from './components/ViewCalculation';
 import { EditCalculation } from './components/EditCalculation';
 import { ViewExpertCalculation } from './components/ViewExpertCalculation';
 import { EditExpertCalculation } from './components/EditExpertCalculation';
+import { ShortLinkResolver } from './components/ShortLinkResolver';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/calculator" element={<Calculator />} />
         <Route path="/upload" element={<ReceiptUpload />} />
         <Route path="/expert" element={<ExpertCalculator />} />
+        <Route path="/s/:shortCode" element={<ShortLinkResolver />} />
         <Route path="/:id" element={<ViewCalculation />} />
         <Route path="/:id/insert" element={<EditCalculation />} />
         <Route path="/expert/:id" element={<ViewExpertCalculation />} />

@@ -14,6 +14,7 @@ import {
   calculateFinalTotal,
 } from '../../utils/calculations';
 import { saveCalculation, updateCalculation } from '../../services/calculationService';
+import { createShortLink, getExistingShortLink } from '../../services/shortLinkService';
 
 interface CalculatorProps {
   calculationId?: string;
@@ -208,15 +209,49 @@ export const Calculator: React.FC<CalculatorProps> = ({
   };
 
   const handleShare = () => {
-    if (currentCalculationId) {
+    handleShareWithShortLink();
+  };
+
+  const handleShareWithShortLink = async () => {
+    if (!currentCalculationId) {
+      alert('Please save the calculation first to get a share link');
+      return;
+    }
+
+    try {
+      // Check if short link already exists
+      let shortCode = await getExistingShortLink(currentCalculationId, 'basic');
+      
+      // Create new short link if doesn't exist
+      if (!shortCode) {
+        shortCode = await createShortLink(currentCalculationId, 'basic');
+      }
+
+      if (shortCode) {
+        const shareUrl = `${window.location.origin}/s/${shortCode}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Short link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      } else {
+        // Fallback to regular link
+        const shareUrl = `${window.location.origin}/${currentCalculationId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Share link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      }
+    } catch (error) {
+      console.error('Error creating short link:', error);
+      // Fallback to regular link
       const shareUrl = `${window.location.origin}/${currentCalculationId}`;
       navigator.clipboard.writeText(shareUrl).then(() => {
         alert('Share link copied to clipboard!');
       }).catch(() => {
         alert(`Share this link: ${shareUrl}`);
       });
-    } else {
-      alert('Please save the calculation first to get a share link');
     }
   };
 
