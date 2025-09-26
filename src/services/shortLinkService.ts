@@ -84,7 +84,7 @@ export const createShortLink = async (
             .from('short_links')
             .delete()
             .eq('id', result.id);
-          console.error('Unable to resolve short code collision:', shortCode);
+            .maybeSingle();
           return null;
         }
       } else {
@@ -115,7 +115,7 @@ export const resolveShortLink = async (shortCode: string): Promise<{
       .from('short_links')
       .select('calculation_type, calculation_id')
       .eq('short_code', shortCode)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       console.error('Error resolving short link:', error);
@@ -142,7 +142,7 @@ export const getExistingShortLink = async (
       .select('short_code')
       .eq('calculation_id', calculationId)
       .eq('calculation_type', calculationType)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       return null;
