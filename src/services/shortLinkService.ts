@@ -61,18 +61,43 @@ export const createShortLink = async (
         if (!queryError && existingLink) {
           // If it's for the same calculation, delete our temporary entry and return the existing short code
           if (existingLink.calculation_id === calculationId && existingLink.calculation_type === calculationType) {
+            // Clean up the temporary entry
             await supabase
               .from('short_links')
               .delete()
               .eq('id', result.id);
+            console.log('Short link already exists for this calculation, using existing:', shortCode);
             return shortCode;
+          } else {
+            // Different calculation has this short code - clean up and return null
+            await supabase
+              .from('short_links')
+              .delete()
+              .eq('id', result.id);
+            console.error('Short code collision with different calculation:', shortCode);
+            return null;
           }
+        } else {
+          // Clean up temporary entry if we can't determine the existing link
+          await supabase
+            .from('short_links')
+            .delete()
+            .eq('id', result.id);
+          console.error('Unable to resolve short code collision:', shortCode);
+          return null;
         }
+      } else {
+        // Clean up temporary entry for other update errors
+        await supabase
+          .from('short_links')
+          .delete()
+          .eq('id', result.id);
+        console.error('Error updating short code:', updateError);
+        return null;
       }
-      console.error('Error updating short code:', updateError);
-      return null;
     }
 
+    console.log('Successfully created short link:', shortCode);
     return shortCode;
   } catch (error) {
     console.error('Error creating short link:', error);
