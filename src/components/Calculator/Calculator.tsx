@@ -200,16 +200,8 @@ export const Calculator: React.FC<CalculatorProps> = ({
         const id = await saveCalculation(calculationData);
         if (id) {
           setCurrentCalculationId(id);
-          
-          // Generate short link for new calculation
-          const shortCode = await createShortLink(id, 'basic');
-          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/${id}`;
-          
-          // Navigate to the edit URL
-          // Navigate to edit URL with short link if available
-          const editUrl = shortCode ? `/s/${shortCode}` : `/${id}/insert`;
-          navigate(editUrl);
-          alert(`Calculation saved!\nShare link: ${shareUrl}\nEdit link: ${window.location.origin}${editUrl}`);
+          navigate(`/${id}/insert`);
+          alert(`Calculation saved!\nShare link: ${window.location.origin}/${id}`);
         } else {
           alert('Failed to save calculation');
         }
@@ -223,50 +215,17 @@ export const Calculator: React.FC<CalculatorProps> = ({
   };
 
   const handleShare = () => {
-    handleShareWithShortLink();
-  };
-
-  const handleShareWithShortLink = async () => {
     if (!currentCalculationId) {
-      alert('Please save the calculation first to get a share link');
+      alert('Please save the calculation first');
       return;
     }
 
-    try {
-      // Check if short link already exists
-      let shortCode = await getExistingShortLink(currentCalculationId, 'basic');
-      
-      // Create new short link if doesn't exist
-      if (!shortCode) {
-        shortCode = await createShortLink(currentCalculationId, 'basic');
-      }
-
-      if (shortCode) {
-        const shareUrl = `${window.location.origin}/s/${shortCode}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert('Short link copied to clipboard!');
-        }).catch(() => {
-          alert(`Share this link: ${shareUrl}`);
-        });
-      } else {
-        // Fallback to regular link
-        const shareUrl = `${window.location.origin}/${currentCalculationId}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          alert('Share link copied to clipboard!');
-        }).catch(() => {
-          alert(`Share this link: ${shareUrl}`);
-        });
-      }
-    } catch (error) {
-      console.error('Error creating short link:', error);
-      // Fallback to regular link
-      const shareUrl = `${window.location.origin}/${currentCalculationId}`;
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('Share link copied to clipboard!');
-      }).catch(() => {
-        alert(`Share this link: ${shareUrl}`);
-      });
-    }
+    const shareUrl = `${window.location.origin}/${currentCalculationId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Share link copied to clipboard!');
+    }).catch(() => {
+      alert(`Share this link: ${shareUrl}`);
+    });
   };
 
   const overallTotal = calculateOverallTotal(persons);
