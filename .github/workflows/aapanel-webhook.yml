@@ -1,0 +1,15 @@
+name: Call aaPanel Webhook
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send POST to aaPanel Webhook
+        run: |
+          curl -X POST "${{ vars.AAPANEL_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{"status":"ok","source":"github-actions"}'
+
