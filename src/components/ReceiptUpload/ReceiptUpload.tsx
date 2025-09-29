@@ -157,10 +157,10 @@ export const ReceiptUpload: React.FC = () => {
   };
 
   const handleFileSelect = useCallback((file: File) => {
-    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'application/pdf'];
     if (!supportedTypes.includes(file.type)) {
       setUploadStatus('error');
-      setErrorMessage('Please select a JPG, PNG, or PDF file');
+      setErrorMessage('Please select a JPG, PNG, HEIC, or PDF file');
       return;
     }
 
@@ -303,7 +303,7 @@ export const ReceiptUpload: React.FC = () => {
                     or click to browse files
                   </p>
                   <p className="text-xs text-gray-400">
-                    Supports JPG, PNG, PDF • Max 10MB
+                    Supports JPG, PNG, HEIC, PDF • Max 10MB
                   </p>
                 </div>
               </div>
@@ -311,7 +311,7 @@ export const ReceiptUpload: React.FC = () => {
 
             <input
               type="file"
-              accept=".jpg,.jpeg,.png,.pdf"
+              accept=".jpg,.jpeg,.png,.heic,.pdf"
               onChange={handleFileInput}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               disabled={isUploading}
@@ -331,7 +331,7 @@ export const ReceiptUpload: React.FC = () => {
             <label className="flex-1">
               <input
                 type="file"
-                accept=".jpg,.jpeg,.png,.pdf"
+                accept=".jpg,.jpeg,.png,.heic,.pdf"
                 onChange={handleFileInput}
                 className="hidden"
                 disabled={isUploading}
@@ -368,7 +368,7 @@ export const ReceiptUpload: React.FC = () => {
               <li>• Make sure the receipt is clearly visible and well-lit</li>
               <li>• Avoid shadows or glare on the receipt</li>
               <li>• Include the entire receipt in the image</li>
-              <li>• Supported formats: JPG, PNG, PDF</li>
+              <li>• Supported formats: JPG, PNG, HEIC, PDF</li>
             </ul>
           </div>
         </div>
