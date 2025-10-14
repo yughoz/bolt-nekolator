@@ -113,25 +113,7 @@ export const ReceiptUpload: React.FC = () => {
     setErrorMessage('');
 
     let fileToUpload = file;
-    
-    // Convert HEIC to JPG if needed
-    if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
-      try {
-        setUploadStatus('idle');
-        // Show conversion status
-        console.log('Converting HEIC to JPG...');
-        fileToUpload = await convertHeicToJpg(file);
-        console.log('HEIC conversion completed');
-      } catch (conversionError) {
-        setUploadStatus('error');
-        setErrorMessage(conversionError instanceof Error ? conversionError.message : 'HEIC conversion failed');
-        setIsUploading(false);
-        return;
-      }
-    }
 
-    let fileToUpload = file;
-    
     // Convert HEIC to JPG if needed
     if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
       try {
