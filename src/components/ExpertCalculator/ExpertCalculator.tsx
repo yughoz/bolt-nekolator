@@ -35,8 +35,24 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
     dataToUse?.persons || [{ id: '1', name: '', color: '#8B5CF6' }]
   );
   const [assignments, setAssignments] = useState<Assignment[]>(dataToUse?.assignments || []);
-  const [discountValue, setDiscountValue] = useState(dataToUse?.discountValue || '');
-  const [taxValue, setTaxValue] = useState(dataToUse?.taxValue || '');
+  const [discountValue, setDiscountValue] = useState(() => {
+    // If we have discountValue from data, use it; otherwise try to reconstruct from discount amount
+    if (dataToUse?.discountValue) {
+      return dataToUse.discountValue;
+    } else if (dataToUse?.discount && dataToUse.discount > 0) {
+      return dataToUse.discount.toString();
+    }
+    return '';
+  });
+  const [taxValue, setTaxValue] = useState(() => {
+    // If we have taxValue from data, use it; otherwise try to reconstruct from tax amount
+    if (dataToUse?.taxValue) {
+      return dataToUse.taxValue;
+    } else if (dataToUse?.tax && dataToUse.tax > 0) {
+      return dataToUse.tax.toString();
+    }
+    return '';
+  });
   const [discount, setDiscount] = useState(dataToUse?.discount || 0);
   const [tax, setTax] = useState(dataToUse?.tax || 0);
   const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
