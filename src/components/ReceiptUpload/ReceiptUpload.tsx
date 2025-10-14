@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Upload, Camera, FileImage, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { processReceiptData } from '../../api/processReceipt';
+import heic2any from 'heic2any';
 
 interface ReceiptItem {
   name: string;
@@ -44,6 +45,32 @@ export const ReceiptUpload: React.FC = () => {
   const [isProcessingJson, setIsProcessingJson] = useState(false);
   const [jsonInput, setJsonInput] = useState('');
 
+  // Convert HEIC to JPG
+  const convertHeicToJpg = async (file: File): Promise<File> => {
+    try {
+      const convertedBlob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.8
+      });
+      
+      // heic2any can return Blob or Blob[], handle both cases
+      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+      
+      // Create a new File object with JPG extension
+      const convertedFile = new File(
+        [blob], 
+        file.name.replace(/\.heic$/i, '.jpg'), 
+        { type: 'image/jpeg' }
+      );
+      
+      return convertedFile;
+    } catch (error) {
+      console.error('HEIC conversion failed:', error);
+      throw new Error('Failed to convert HEIC image. Please try a different format.');
+    }
+  };
+
   const processReceiptData = (data: ReceiptData) => {
     // Convert receipt data to expert calculator format
     const items = data.items.flatMap((item, index) => {
@@ -85,11 +112,29 @@ export const ReceiptUpload: React.FC = () => {
     setUploadStatus('idle');
     setErrorMessage('');
 
+    let fileToUpload = file;
+    
+    // Convert HEIC to JPG if needed
+    if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+      try {
+        setUploadStatus('idle');
+        // Show conversion status
+        console.log('Converting HEIC to JPG...');
+        fileToUpload = await convertHeicToJpg(file);
+        console.log('HEIC conversion completed');
+      } catch (conversionError) {
+        setUploadStatus('error');
+        setErrorMessage(conversionError instanceof Error ? conversionError.message : 'HEIC conversion failed');
+        setIsUploading(false);
+        return;
+      }
+    }
+
     let response: Response;
 
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', fileToUpload);
 
       const apiUrl = import.meta.env.VITE_RECEIPT_UPLOAD_API_URL;
       
@@ -160,10 +205,15 @@ export const ReceiptUpload: React.FC = () => {
 
   const handleFileSelect = useCallback((file: File) => {
     const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'application/pdf'];
+    const isHeic = file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic');
+    
     if (!supportedTypes.includes(file.type)) {
-      setUploadStatus('error');
-      setErrorMessage('Please select a JPG, PNG, HEIC, or PDF file');
-      return;
+      // Check if it's HEIC by file extension since some browsers don't recognize the MIME type
+      if (!isHeic) {
+        setUploadStatus('error');
+        setErrorMessage('Please select a JPG, PNG, HEIC, or PDF file');
+        return;
+      }
     }
 
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
@@ -270,8 +320,12 @@ export const ReceiptUpload: React.FC = () => {
               <div className="space-y-4">
                 <Loader2 className="w-16 h-16 text-purple-600 mx-auto animate-spin" />
                 <div>
-                  <p className="text-lg font-medium text-gray-700">Processing Receipt...</p>
-                  <p className="text-sm text-gray-500">Extracting items and prices</p>
+                  <p className="text-lg font-medium text-gray-700">
+                    {isDragging ? 'Processing Receipt...' : 'Processing Receipt...'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Converting and extracting items and prices
+                  </p>
                 </div>
               </div>
             ) : uploadStatus === 'success' ? (
@@ -305,7 +359,7 @@ export const ReceiptUpload: React.FC = () => {
                     or click to browse files
                   </p>
                   <p className="text-xs text-gray-400">
-                    Supports JPG, PNG, HEIC, PDF • Max 10MB
+                    Supports JPG, PNG, HEIC, PDF • Max 10MB • HEIC files will be converted to JPG
                   </p>
                 </div>
               </div>
@@ -370,7 +424,7 @@ export const ReceiptUpload: React.FC = () => {
               <li>• Make sure the receipt is clearly visible and well-lit</li>
               <li>• Avoid shadows or glare on the receipt</li>
               <li>• Include the entire receipt in the image</li>
-              <li>• Supported formats: JPG, PNG, HEIC, PDF</li>
+              <li>• Supported formats: JPG, PNG, HEIC, PDF (HEIC will be auto-converted)</li>
             </ul>
           </div>
         </div>
