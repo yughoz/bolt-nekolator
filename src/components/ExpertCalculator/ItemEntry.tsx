@@ -16,12 +16,6 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
   onDelete,
   dragHandleProps,
 }) => {
-  const categoryColors = {
-    food: 'bg-green-100 text-green-800',
-    drink: 'bg-blue-100 text-blue-800',
-    other: 'bg-gray-100 text-gray-800',
-  };
-
   return (
     <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
       <div
@@ -31,34 +25,22 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
         <GripVertical size={16} />
       </div>
 
-      <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex-1 min-w-0">
         <input
           type="text"
           value={item.name}
           onChange={(e) => onUpdate(item.id, { name: e.target.value })}
           placeholder="Item name"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px] mb-2"
         />
 
-        <div className="flex gap-2">
-          <input
-            type="number"
-            value={item.price}
-            onChange={(e) => onUpdate(item.id, { price: Number(e.target.value) || 0 })}
-            placeholder="Price"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
-          />
-
-          <select
-            value={item.category}
-            onChange={(e) => onUpdate(item.id, { category: e.target.value as Item['category'] })}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
-          >
-            <option value="food">Food</option>
-            <option value="drink">Drink</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
+        <input
+          type="number"
+          value={item.price}
+          onChange={(e) => onUpdate(item.id, { price: Number(e.target.value) || 0 })}
+          placeholder="Price"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
+        />
       </div>
 
       <button

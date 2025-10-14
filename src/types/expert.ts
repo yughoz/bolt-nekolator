@@ -2,7 +2,6 @@ export interface Item {
   id: string;
   name: string;
   price: number;
-  category: 'food' | 'drink' | 'other';
 }
 
 export interface Person {

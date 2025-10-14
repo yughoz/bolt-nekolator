@@ -74,8 +74,7 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
     const newItem: Item = {
       id: Date.now().toString(),
       name: '',
-      price: 0,
-      category: 'food'
+      price: 0
     };
     setItems(prev => [...prev, newItem]);
   }, []);

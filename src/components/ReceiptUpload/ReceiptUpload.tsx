@@ -79,16 +79,14 @@ export const ReceiptUpload: React.FC = () => {
         return Array.from({ length: item.quantity }, (_, qIndex) => ({
           id: `item-${index}-${qIndex}`,
           name: `${item.name} (${qIndex + 1}/${item.quantity})`,
-          price: Math.round(item.unit_price / item.quantity),
-          category: 'food' as const
+          price: Math.round(item.unit_price / item.quantity)
         }));
       } else {
         // Single item
         return [{
           id: `item-${index}`,
           name: item.name,
-          price: Math.round(item.total),
-          category: 'food' as const
+          price: Math.round(item.total)
         }];
       }
     });
