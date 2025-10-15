@@ -174,14 +174,17 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         // Create new calculation
         const id = await saveExpertCalculation(calculationData);
         if (id) {
+          // Update the current calculation ID so we can update instead of creating new ones
+          setCurrentCalculationId(id);
+
           // Generate short link for new calculation
           const shortCode = await createShortLink(id, 'expert');
           const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/expert/${id}`;
 
           alert(`Calculation saved!\nShare link: ${shareUrl}`);
 
-          // Navigate to the edit page
-          navigate(`/expert/${id}/edit`, { replace: true });
+          // Update URL without navigation to avoid reload
+          window.history.replaceState(null, '', `/expert/${id}/edit`);
         } else {
           alert('Failed to save calculation');
         }
