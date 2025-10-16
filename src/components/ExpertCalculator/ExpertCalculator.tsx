@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Plus, Save, Share2, Trash2, GripVertical, ArrowLeft, Home } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -11,14 +11,6 @@ import { saveExpertCalculation, updateExpertCalculation } from '../../services/e
 import type { ExpertCalculationData } from '../../services/expertCalculationService';
 import { createShortLink, getExistingShortLink } from '../../services/shortLinkService';
 import { parseAdditionString } from '../../utils/calculations';
-import { Notification } from '../common/Notification';
-import {
-  downloadImageDataUrl,
-  generateNodeImage,
-  isMobileDevice,
-  openWhatsAppShare,
-  shareImageViaWebShare,
-} from '../../utils/shareUtils';
 
 interface ExpertCalculatorProps {
   calculationId?: string;
@@ -66,38 +58,6 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
   const [receiptData, setReceiptData] = useState(dataToUse?.receiptData || null);
   const [isSaving, setIsSaving] = useState(false);
   const [currentCalculationId, setCurrentCalculationId] = useState(calculationId);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-
-  const notificationTimeoutRef = useRef<number | null>(null);
-  const resultsRef = useRef<HTMLDivElement>(null);
-
-  const showNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    setNotification({ message, type });
-    if (notificationTimeoutRef.current) {
-      window.clearTimeout(notificationTimeoutRef.current);
-    }
-    notificationTimeoutRef.current = window.setTimeout(() => {
-      setNotification(null);
-      notificationTimeoutRef.current = null;
-    }, 4000);
-  }, []);
-
-  const handleNotificationClose = useCallback(() => {
-    if (notificationTimeoutRef.current) {
-      window.clearTimeout(notificationTimeoutRef.current);
-      notificationTimeoutRef.current = null;
-    }
-    setNotification(null);
-  }, []);
-
-  const buildShareUrl = useCallback(async (calcId: string) => {
-    let shortCode = await getExistingShortLink(calcId, 'expert');
-    if (!shortCode) {
-      shortCode = await createShortLink(calcId, 'expert');
-    }
-    return shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/expert/${calcId}`;
-  }, []);
 
   // Debug logging to see what data we're getting
   React.useEffect(() => {
@@ -109,39 +69,6 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
       tax: dataToUse?.tax
     });
   }, [dataToUse]);
-
-  React.useEffect(() => {
-    return () => {
-      if (notificationTimeoutRef.current) {
-        window.clearTimeout(notificationTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  React.useEffect(() => {
-    if (!currentCalculationId) {
-      setShareUrl(null);
-      return;
-    }
-
-    let isActive = true;
-    const ensureShareLink = async () => {
-      try {
-        const url = await buildShareUrl(currentCalculationId);
-        if (isActive) {
-          setShareUrl(url);
-        }
-      } catch (error) {
-        console.error('Failed to load expert short link:', error);
-      }
-    };
-
-    ensureShareLink();
-
-    return () => {
-      isActive = false;
-    };
-  }, [currentCalculationId, buildShareUrl]);
 
   const addItem = useCallback(() => {
     const newItem: Item = {
@@ -232,11 +159,16 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         // Update existing calculation
         const success = await updateExpertCalculation(currentCalculationId, calculationData);
         if (success) {
-          const updatedShareUrl = await buildShareUrl(currentCalculationId);
-          setShareUrl(updatedShareUrl);
-          showNotification('Calculation updated successfully!');
+          // Generate short link for updated calculation
+          let shortCode = await getExistingShortLink(currentCalculationId, 'expert');
+          if (!shortCode) {
+            shortCode = await createShortLink(currentCalculationId, 'expert');
+          }
+          
+          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/expert/${currentCalculationId}`;
+          alert(`Calculation updated successfully!\nShare link: ${shareUrl}`);
         } else {
-          showNotification('Failed to update calculation', 'error');
+          alert('Failed to update calculation');
         }
       } else {
         // Create new calculation
@@ -245,111 +177,75 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
           // Update the current calculation ID so we can update instead of creating new ones
           setCurrentCalculationId(id);
 
-          const newShareUrl = await buildShareUrl(id);
-          setShareUrl(newShareUrl);
-          showNotification('Calculation saved!');
+          // Generate short link for new calculation
+          const shortCode = await createShortLink(id, 'expert');
+          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/expert/${id}`;
+
+          alert(`Calculation saved!\nShare link: ${shareUrl}`);
 
           // Update URL without navigation to avoid reload
           window.history.replaceState(null, '', `/expert/${id}/edit`);
         } else {
-          showNotification('Failed to save calculation', 'error');
+          alert('Failed to save calculation');
         }
       }
     } catch (error) {
       console.error('Error saving calculation:', error);
-      showNotification('Failed to save calculation', 'error');
+      alert('Failed to save calculation');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleShare = async () => {
+  const handleShare = () => {
+    handleShareWithShortLink();
+  };
+
+  const handleShareWithShortLink = async () => {
     if (!currentCalculationId) {
-      showNotification('Please save the calculation first to get a share link', 'error');
+      alert('Please save the calculation first to get a share link');
       return;
     }
 
     try {
-      const shareLink = await buildShareUrl(currentCalculationId);
-      setShareUrl(shareLink);
-
-      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        try {
-          await navigator.clipboard.writeText(shareLink);
-        } catch (error) {
-          console.warn('Unable to copy share link automatically:', error);
-        }
+      // Check if short link already exists
+      let shortCode = await getExistingShortLink(currentCalculationId, 'expert');
+      
+      // Create new short link if doesn't exist
+      if (!shortCode) {
+        shortCode = await createShortLink(currentCalculationId, 'expert');
       }
 
-      if (!resultsRef.current) {
-        showNotification('Results not ready to export', 'error');
-        return;
+      if (shortCode) {
+        const shareUrl = `${window.location.origin}/s/${shortCode}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Short link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
+      } else {
+        // Fallback to regular link
+        const shareUrl = `${window.location.origin}/expert/${currentCalculationId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert('Share link copied to clipboard!');
+        }).catch(() => {
+          alert(`Share this link: ${shareUrl}`);
+        });
       }
-
-      const imageDataUrl = await generateNodeImage(resultsRef.current);
-      if (!imageDataUrl) {
-        showNotification('Failed to generate results image', 'error');
-        return;
-      }
-
-      const filename = 'nekolators-expert-results.png';
-      const shareText = shareLink
-        ? `Nekolators expert results: ${shareLink}`
-        : 'Nekolators expert results';
-      const shared = await shareImageViaWebShare(imageDataUrl, filename, shareText);
-
-      if (shared) {
-        showNotification('Share sheet opened!');
-        return;
-      }
-
-      if (isMobileDevice()) {
-        openWhatsAppShare(shareText);
-        downloadImageDataUrl(imageDataUrl, filename);
-        showNotification('WhatsApp share opened. Image downloaded as backup.');
-        return;
-      }
-
-      downloadImageDataUrl(imageDataUrl, filename);
-      showNotification('Results image downloaded. Share link copied to clipboard.');
     } catch (error) {
-      console.error('Error sharing expert calculation:', error);
-      showNotification('Failed to share calculation', 'error');
+      console.error('Error creating short link:', error);
+      // Fallback to regular link
+      const shareUrl = `${window.location.origin}/expert/${currentCalculationId}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Share link copied to clipboard!');
+      }).catch(() => {
+        alert(`Share this link: ${shareUrl}`);
+      });
     }
   };
 
-  const handleCopyShareUrl = useCallback(async () => {
-    if (!shareUrl) {
-      return;
-    }
-
-    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        showNotification('Share link copied to clipboard!');
-        return;
-      } catch {
-        showNotification('Unable to copy automatically. Copy it manually from the link.', 'error');
-        return;
-      }
-    }
-
-    showNotification('Clipboard unavailable. Copy it manually from the link.', 'error');
-  }, [shareUrl, showNotification]);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
-      {notification && (
-        <div className="pointer-events-none fixed top-4 right-4 z-50 flex flex-col gap-2">
-          <div className="pointer-events-auto">
-            <Notification
-              message={notification.message}
-              type={notification.type}
-              onClose={handleNotificationClose}
-            />
-          </div>
-        </div>
-      )}
       <div className="max-w-6xl mx-auto">
         {/* Header Navigation */}
         <div className="flex items-center justify-between mb-6">
@@ -384,25 +280,6 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
             </button>
           </div>
         </div>
-        {shareUrl && (
-          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-white/10 px-4 py-3 text-white">
-            <span className="text-sm font-semibold">Share link:</span>
-            <a
-              href={shareUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="max-w-full truncate font-mono text-sm underline-offset-2 hover:underline"
-            >
-              {shareUrl}
-            </a>
-            <button
-              onClick={handleCopyShareUrl}
-              className="rounded-md bg-white/20 px-3 py-1 text-sm font-semibold transition-colors hover:bg-white/30"
-            >
-              Copy
-            </button>
-          </div>
-        )}
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
@@ -565,7 +442,6 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         {/* Results */}
         <div className="mt-6 px-2 sm:px-0">
           <ExpertResults
-            ref={resultsRef}
             persons={persons}
             totals={totals}
             discount={discount}

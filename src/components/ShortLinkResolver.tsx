@@ -26,11 +26,11 @@ export const ShortLinkResolver: React.FC = () => {
         }
 
         // Redirect to the appropriate calculation page
-        setRedirectTo(
-          result.calculationType === 'basic'
-            ? `/${result.calculationId}`
-            : `/expert/${result.calculationId}`
-        );
+        if (result.calculationType === 'basic') {
+          setRedirectTo(`/${result.calculationId}/insert`);
+        } else {
+          setRedirectTo(`/expert/${result.calculationId}/edit`);
+        }
       } catch (err) {
         setError('Failed to resolve short link');
         setLoading(false);
