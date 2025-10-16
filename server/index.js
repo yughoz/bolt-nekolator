@@ -1,10 +1,7 @@
-import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 
-// Load environment variables FIRST
-dotenv.config();
-
+// Bun automatically loads .env files - no dotenv needed!
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
 

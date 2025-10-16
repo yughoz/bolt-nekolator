@@ -15,6 +15,14 @@ import {
 } from '../../utils/calculations';
 import { saveCalculation, updateCalculation } from '../../services/calculationService';
 import { createShortLink, getExistingShortLink } from '../../services/shortLinkService';
+import { Notification } from '../common/Notification';
+import {
+  downloadImageDataUrl,
+  generateNodeImage,
+  isMobileDevice,
+  openWhatsAppShare,
+  shareImageViaWebShare,
+} from '../../utils/shareUtils';
 
 interface CalculatorProps {
   calculationId?: string;
@@ -46,9 +54,40 @@ export const Calculator: React.FC<CalculatorProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentCalculationId, setCurrentCalculationId] = useState(calculationId);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const taxInputRef = useRef<HTMLInputElement>(null);
   const personInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const notificationTimeoutRef = useRef<number | null>(null);
+
+  const showNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    setNotification({ message, type });
+    if (notificationTimeoutRef.current) {
+      window.clearTimeout(notificationTimeoutRef.current);
+    }
+    notificationTimeoutRef.current = window.setTimeout(() => {
+      setNotification(null);
+      notificationTimeoutRef.current = null;
+    }, 4000);
+  }, []);
+
+  const handleNotificationClose = useCallback(() => {
+    if (notificationTimeoutRef.current) {
+      window.clearTimeout(notificationTimeoutRef.current);
+      notificationTimeoutRef.current = null;
+    }
+    setNotification(null);
+  }, []);
+
+  const buildShareUrl = useCallback(async (calcId: string) => {
+    let shortCode = await getExistingShortLink(calcId, 'basic');
+    if (!shortCode) {
+      shortCode = await createShortLink(calcId, 'basic');
+    }
+    return shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/${calcId}`;
+  }, []);
 
   const handleDiscountChange = useCallback((value: string) => {
     setDiscountValue(value);
@@ -167,6 +206,39 @@ export const Calculator: React.FC<CalculatorProps> = ({
     }
   }, [persons.length, addPerson]);
 
+  React.useEffect(() => {
+    return () => {
+      if (notificationTimeoutRef.current) {
+        window.clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!currentCalculationId) {
+      setShareUrl(null);
+      return;
+    }
+
+    let isActive = true;
+    const ensureShareLink = async () => {
+      try {
+        const url = await buildShareUrl(currentCalculationId);
+        if (isActive) {
+          setShareUrl(url);
+        }
+      } catch (error) {
+        console.error('Failed to load short link:', error);
+      }
+    };
+
+    ensureShareLink();
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentCalculationId, buildShareUrl]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -184,55 +256,121 @@ export const Calculator: React.FC<CalculatorProps> = ({
         // Update existing calculation
         const success = await updateCalculation(currentCalculationId, calculationData);
         if (success) {
-          // Generate short link for updated calculation
-          let shortCode = await getExistingShortLink(currentCalculationId, 'basic');
-          if (!shortCode) {
-            shortCode = await createShortLink(currentCalculationId, 'basic');
-          }
-          
-          const shareUrl = shortCode ? `${window.location.origin}/s/${shortCode}` : `${window.location.origin}/${currentCalculationId}`;
-          alert(`Calculation updated successfully!\nShare link: ${shareUrl}`);
+          const updatedShareUrl = await buildShareUrl(currentCalculationId);
+          setShareUrl(updatedShareUrl);
+          showNotification('Calculation updated successfully!');
         } else {
-          alert('Failed to update calculation');
+          showNotification('Failed to update calculation', 'error');
         }
       } else {
         // Create new calculation
         const id = await saveCalculation(calculationData);
         if (id) {
           setCurrentCalculationId(id);
+          const newShareUrl = await buildShareUrl(id);
+          setShareUrl(newShareUrl);
           navigate(`/${id}/insert`);
-          alert(`Calculation saved!\nShare link: ${window.location.origin}/${id}`);
+          showNotification('Calculation saved!');
         } else {
-          alert('Failed to save calculation');
+          showNotification('Failed to save calculation', 'error');
         }
       }
     } catch (error) {
       console.error('Error saving calculation:', error);
-      alert('Failed to save calculation');
+      showNotification('Failed to save calculation', 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!currentCalculationId) {
-      alert('Please save the calculation first');
+      showNotification('Please save the calculation first', 'error');
       return;
     }
 
-    const shareUrl = `${window.location.origin}/${currentCalculationId}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('Share link copied to clipboard!');
-    }).catch(() => {
-      alert(`Share this link: ${shareUrl}`);
-    });
+    try {
+      const url = await buildShareUrl(currentCalculationId);
+      setShareUrl(url);
+
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch (error) {
+          console.warn('Unable to copy share link automatically:', error);
+        }
+      }
+
+      if (!resultsRef.current) {
+        showNotification('Results not ready to export', 'error');
+        return;
+      }
+
+      const imageDataUrl = await generateNodeImage(resultsRef.current);
+      if (!imageDataUrl) {
+        showNotification('Failed to generate results image', 'error');
+        return;
+      }
+
+      const filename = 'nekolators-basic-results.png';
+      const shareText = url ? `Nekolators results: ${url}` : 'Nekolators results';
+      const shared = await shareImageViaWebShare(imageDataUrl, filename, shareText);
+
+      if (shared) {
+        showNotification('Share sheet opened!');
+        return;
+      }
+
+      if (isMobileDevice()) {
+        openWhatsAppShare(shareText);
+        downloadImageDataUrl(imageDataUrl, filename);
+        showNotification('WhatsApp share opened. Image downloaded as backup.');
+        return;
+      }
+
+      downloadImageDataUrl(imageDataUrl, filename);
+      showNotification('Results image downloaded. Share link copied to clipboard.');
+    } catch (error) {
+      console.error('Error sharing calculation:', error);
+      showNotification('Failed to share calculation', 'error');
+    }
   };
+
+  const handleCopyShareUrl = useCallback(async () => {
+    if (!shareUrl) {
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showNotification('Share link copied to clipboard!');
+        return;
+      } catch {
+        showNotification('Unable to copy automatically. Copy it manually from the link.', 'error');
+        return;
+      }
+    }
+
+    showNotification('Clipboard unavailable. Copy it manually from the link.', 'error');
+  }, [shareUrl, showNotification]);
 
   const overallTotal = calculateOverallTotal(persons);
   const finalTotal = calculateFinalTotal(persons);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4">
+      {notification && (
+        <div className="pointer-events-none fixed top-4 right-4 z-50 flex flex-col gap-2">
+          <div className="pointer-events-auto">
+            <Notification
+              message={notification.message}
+              type={notification.type}
+              onClose={handleNotificationClose}
+            />
+          </div>
+        </div>
+      )}
       <div className="max-w-2xl mx-auto">
         {/* Header Navigation */}
         <div className="flex items-center justify-between mb-6">
@@ -271,6 +409,25 @@ export const Calculator: React.FC<CalculatorProps> = ({
             )}
           </div>
         </div>
+        {shareUrl && (
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-white/10 px-4 py-3 text-white">
+            <span className="text-sm font-semibold">Share link:</span>
+            <a
+              href={shareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="max-w-full truncate font-mono text-sm underline-offset-2 hover:underline"
+            >
+              {shareUrl}
+            </a>
+            <button
+              onClick={handleCopyShareUrl}
+              className="rounded-md bg-white/20 px-3 py-1 text-sm font-semibold transition-colors hover:bg-white/30"
+            >
+              Copy
+            </button>
+          </div>
+        )}
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
@@ -342,6 +499,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
 
         <div className="mt-6">
           <ResultsDisplay
+            ref={resultsRef}
             persons={persons}
             totalDiscount={discountResult}
             totalTax={taxResult}
