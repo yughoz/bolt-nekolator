@@ -1,6 +1,7 @@
 import React from 'react';
 import { Copy, Trash2 } from 'lucide-react';
 import type { PersonEntry as PersonEntryType } from '../../types/calculator';
+import { useLanguage } from '../../lib/i18n';
 
 interface PersonEntryProps {
   person: PersonEntryType;
@@ -23,13 +24,15 @@ export const PersonEntry: React.FC<PersonEntryProps> = ({
   onKeyPress,
   inputRef,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
       <input
         type="text"
         value={person.name}
         onChange={(e) => onNameChange(index, e.target.value)}
-        placeholder={`Person_${index + 1}`}
+        placeholder={t('calculator.personPlaceholder', { index: index + 1 })}
         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
       />
       
@@ -40,14 +43,14 @@ export const PersonEntry: React.FC<PersonEntryProps> = ({
           value={person.price}
           onChange={(e) => onPriceChange(index, e.target.value)}
           onKeyPress={(e) => onKeyPress(e, index)}
-          placeholder="5000+7000"
+          placeholder={t('calculator.pricePlaceholder')}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
         />
         
         <button
           onClick={() => onClone(index)}
           className="px-3 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors flex items-center justify-center"
-          title="Clone entry"
+          title={t('calculator.cloneEntry')}
         >
           <Copy size={16} />
         </button>
@@ -55,7 +58,7 @@ export const PersonEntry: React.FC<PersonEntryProps> = ({
         <button
           onClick={() => onDelete(index)}
           className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center justify-center"
-          title="Delete entry"
+          title={t('calculator.deleteEntry')}
         >
           <Trash2 size={16} />
         </button>

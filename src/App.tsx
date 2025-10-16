@@ -9,10 +9,12 @@ import { EditCalculation } from './components/EditCalculation';
 import { ViewExpertCalculation } from './components/ViewExpertCalculation';
 import { EditExpertCalculation } from './components/EditExpertCalculation';
 import { ShortLinkResolver } from './components/ShortLinkResolver';
+import { LanguageToggle } from './components/common/LanguageToggle';
 
 function App() {
   return (
     <Router>
+      <LanguageToggle />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/calculator" element={<Calculator />} />

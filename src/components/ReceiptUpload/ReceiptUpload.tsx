@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Upload, Camera, FileImage, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import heic2any from 'heic2any';
+import { useLanguage } from '../../lib/i18n';
 
 interface ReceiptItem {
   name: string;
@@ -37,6 +38,7 @@ interface ReceiptData {
 
 export const ReceiptUpload: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -64,7 +66,7 @@ export const ReceiptUpload: React.FC = () => {
       return convertedFile;
     } catch (error) {
       console.error('HEIC conversion failed:', error);
-      throw new Error('Failed to convert HEIC image. Please try a different format.');
+      throw new Error(t('receiptUpload.heicConversionFailed'));
     }
   };
 
@@ -206,14 +208,14 @@ export const ReceiptUpload: React.FC = () => {
       // Check if it's HEIC by file extension since some browsers don't recognize the MIME type
       if (!isHeic) {
         setUploadStatus('error');
-        setErrorMessage('Please select a JPG, PNG, HEIC, or PDF file');
+        setErrorMessage(t('receiptUpload.fileTypeError'));
         return;
       }
     }
 
     if (file.size > 10 * 1024 * 1024) { // 10MB limit
       setUploadStatus('error');
-      setErrorMessage('File size must be less than 10MB');
+      setErrorMessage(t('receiptUpload.fileSizeError'));
       return;
     }
 
@@ -256,10 +258,10 @@ export const ReceiptUpload: React.FC = () => {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
-            Upload Receipt
+            {t('receiptUpload.title')}
           </h1>
           <p className="text-white/80">
-            Upload your receipt image to automatically extract items
+            {t('receiptUpload.subtitle')}
           </p>
         </div>
 
@@ -284,10 +286,10 @@ export const ReceiptUpload: React.FC = () => {
                 <Loader2 className="w-16 h-16 text-purple-600 mx-auto animate-spin" />
                 <div>
                   <p className="text-lg font-medium text-gray-700">
-                    {isDragging ? 'Processing Receipt...' : 'Processing Receipt...'}
+                    {t('receiptUpload.processing')}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Converting and extracting items and prices
+                    {t('receiptUpload.processingDetails')}
                   </p>
                 </div>
               </div>
@@ -295,15 +297,15 @@ export const ReceiptUpload: React.FC = () => {
               <div className="space-y-4">
                 <CheckCircle className="w-16 h-16 text-green-600 mx-auto" />
                 <div>
-                  <p className="text-lg font-medium text-green-700">Receipt Processed!</p>
-                  <p className="text-sm text-green-600">Redirecting to calculator...</p>
+                  <p className="text-lg font-medium text-green-700">{t('receiptUpload.successTitle')}</p>
+                  <p className="text-sm text-green-600">{t('receiptUpload.successDescription')}</p>
                 </div>
               </div>
             ) : uploadStatus === 'error' ? (
               <div className="space-y-4">
                 <AlertCircle className="w-16 h-16 text-red-600 mx-auto" />
                 <div>
-                  <p className="text-lg font-medium text-red-700">Upload Failed</p>
+                  <p className="text-lg font-medium text-red-700">{t('receiptUpload.errorTitle')}</p>
                   <p className="text-sm text-red-600">{errorMessage}</p>
                 </div>
               </div>
@@ -316,13 +318,13 @@ export const ReceiptUpload: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-lg font-medium text-gray-700 mb-2">
-                    Drop your receipt image here
+                    {t('receiptUpload.dropHere')}
                   </p>
                   <p className="text-sm text-gray-500 mb-4">
-                    or click to browse files
+                    {t('receiptUpload.browse')}
                   </p>
                   <p className="text-xs text-gray-400">
-                    Supports JPG, PNG, HEIC, PDF • Max 10MB • HEIC files will be converted to JPG
+                    {t('receiptUpload.supportedFormats')}
                   </p>
                 </div>
               </div>
@@ -344,7 +346,7 @@ export const ReceiptUpload: React.FC = () => {
               disabled={isUploading}
               className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Skip & Enter Manually
+              {t('receiptUpload.skip')}
             </button>
 
             <label className="flex-1">
@@ -356,19 +358,19 @@ export const ReceiptUpload: React.FC = () => {
                 disabled={isUploading}
               />
               <div className="w-full px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors cursor-pointer text-center disabled:opacity-50">
-                Choose File
+                {t('receiptUpload.chooseFile')}
               </div>
             </label>
           </div>
 
           {/* Instructions */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-2">Tips for best results:</h3>
+            <h3 className="font-medium text-blue-900 mb-2">{t('common.tipsTitle')}</h3>
             <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Make sure the receipt is clearly visible and well-lit</li>
-              <li>• Avoid shadows or glare on the receipt</li>
-              <li>• Include the entire receipt in the image</li>
-              <li>• Supported formats: JPG, PNG, HEIC, PDF (HEIC will be auto-converted)</li>
+              <li>{t('receiptUpload.tipOne')}</li>
+              <li>{t('receiptUpload.tipTwo')}</li>
+              <li>{t('receiptUpload.tipThree')}</li>
+              <li>{t('receiptUpload.tipFour')}</li>
             </ul>
           </div>
         </div>

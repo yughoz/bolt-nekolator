@@ -2,6 +2,7 @@ import React from 'react';
 import { GripVertical, Trash2 } from 'lucide-react';
 import type { Item } from '../../types/expert';
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd';
+import { useLanguage } from '../../lib/i18n';
 
 interface ItemEntryProps {
   item: Item;
@@ -16,6 +17,8 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
   onDelete,
   dragHandleProps,
 }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
       <div
@@ -30,7 +33,7 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
           type="text"
           value={item.name}
           onChange={(e) => onUpdate(item.id, { name: e.target.value })}
-          placeholder="Item name"
+          placeholder={t('expert.itemNamePlaceholder')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px] mb-2"
         />
 
@@ -38,7 +41,7 @@ export const ItemEntry: React.FC<ItemEntryProps> = ({
           type="number"
           value={item.price}
           onChange={(e) => onUpdate(item.id, { price: Number(e.target.value) || 0 })}
-          placeholder="Price"
+          placeholder={t('expert.itemPricePlaceholder')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm min-h-[40px]"
         />
       </div>

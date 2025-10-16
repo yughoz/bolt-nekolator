@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { MoreVertical, Download } from 'lucide-react';
 import type { PersonEntry } from '../../types/calculator';
 import { formatNumber, calculatePersonTotal } from '../../utils/calculations';
+import { useLanguage } from '../../lib/i18n';
 
 interface ResultsDisplayProps {
   persons: PersonEntry[];
@@ -28,6 +29,8 @@ export const ResultsDisplay = forwardRef<HTMLDivElement, ResultsDisplayProps>(
     },
     ref
   ) => {
+    const { t } = useLanguage();
+
     return (
       <div ref={ref} className="bg-white p-6 rounded-lg shadow-md">
         <div className="space-y-4">
@@ -43,7 +46,7 @@ export const ResultsDisplay = forwardRef<HTMLDivElement, ResultsDisplayProps>(
               <div key={person.id} className="border-b border-gray-100 pb-3 last:border-b-0">
                 <div className="flex justify-between items-center">
                   <span className="font-medium">
-                    {person.name || `Person ${index + 1}`}
+                    {person.name || t('calculator.personFallback', { index: index + 1 })}
                   </span>
                   {!showDetails && (
                     <span className="text-lg font-semibold text-orange-600">
@@ -55,19 +58,19 @@ export const ResultsDisplay = forwardRef<HTMLDivElement, ResultsDisplayProps>(
                 {showDetails && (
                   <div className="mt-2 space-y-1 text-sm text-gray-600">
                     <div className="flex justify-between">
-                      <span>Price:</span>
+                      <span>{t('calculator.priceLabel')}</span>
                       <span>{new Intl.NumberFormat('id-ID').format(person.totalPrice)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Disc:</span>
+                      <span>{t('calculator.discountShortLabel')}</span>
                       <span>-{new Intl.NumberFormat('id-ID').format(Math.round(breakdown.discountAmount))}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Tax:</span>
+                      <span>{t('calculator.taxShortLabel')}</span>
                       <span>{new Intl.NumberFormat('id-ID').format(Math.round(breakdown.taxAmount))}</span>
                     </div>
                     <div className="flex justify-between font-semibold text-orange-600 border-t border-gray-200 pt-1">
-                      <span>Total:</span>
+                      <span>{t('calculator.totalShortLabel')}</span>
                       <span>{new Intl.NumberFormat('id-ID').format(Math.round(breakdown.finalAmount))}</span>
                     </div>
                   </div>
@@ -78,7 +81,7 @@ export const ResultsDisplay = forwardRef<HTMLDivElement, ResultsDisplayProps>(
           
           <div className="pt-4 border-t-2 border-orange-200">
             <div className="flex justify-between items-center text-xl font-bold text-orange-600">
-              <span>Total final:</span>
+              <span>{t('calculator.finalTotalLabel')}</span>
               <span>{new Intl.NumberFormat('id-ID').format(Math.round(finalTotal))}</span>
             </div>
           </div>
@@ -91,7 +94,7 @@ export const ResultsDisplay = forwardRef<HTMLDivElement, ResultsDisplayProps>(
               className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
             >
               <MoreVertical size={16} />
-              Details
+              {t('calculator.toggleDetails')}
             </button>
             
             <button
@@ -99,7 +102,7 @@ export const ResultsDisplay = forwardRef<HTMLDivElement, ResultsDisplayProps>(
               className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 border border-orange-600 rounded-md hover:bg-orange-50 transition-colors"
             >
               <Download size={16} />
-              Download
+              {t('calculator.download')}
             </button>
           </div>
         )}

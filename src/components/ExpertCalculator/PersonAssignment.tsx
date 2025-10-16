@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Item, Person, Assignment } from '../../types/expert';
+import { useLanguage } from '../../lib/i18n';
 
 interface PersonAssignmentProps {
   items: Item[];
@@ -14,6 +15,8 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
   assignments,
   onToggleAssignment,
 }) => {
+  const { t } = useLanguage();
+
   const isAssigned = (itemId: string, personId: string) => {
     return assignments.some(a => a.itemId === itemId && a.personId === personId);
   };
@@ -35,7 +38,7 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h4 className="font-medium text-gray-800">
-                  {item.name || 'Unnamed Item'}
+                  {item.name || t('expert.unnamedItem')}
                 </h4>
                 <p className="text-sm text-gray-600">
                   {new Intl.NumberFormat('id-ID').format(Math.round(item.price))}
@@ -49,7 +52,7 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
                       key={person!.id}
                       className="w-6 h-6 rounded-full border-2 border-white"
                       style={{ backgroundColor: person!.color }}
-                      title={person!.name || `Person ${persons.indexOf(person!) + 1}`}
+                      title={person!.name || t('expert.personFallback', { index: persons.indexOf(person!) + 1 })}
                     />
                   ))}
                 </div>
@@ -72,7 +75,7 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
                     style={{ backgroundColor: person.color }}
                   />
                   <span className="truncate">
-                    {person.name || `Person ${persons.indexOf(person) + 1}`}
+                    {person.name || t('expert.personFallback', { index: persons.indexOf(person) + 1 })}
                   </span>
                 </button>
               ))}
@@ -83,7 +86,7 @@ export const PersonAssignment: React.FC<PersonAssignmentProps> = ({
       
       {items.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          <p>Add items to start assigning them to people</p>
+          <p>{t('expert.addItemsPrompt')}</p>
         </div>
       )}
     </div>

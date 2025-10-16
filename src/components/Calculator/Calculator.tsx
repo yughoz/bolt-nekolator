@@ -23,6 +23,7 @@ import {
   openWhatsAppShare,
   shareImageViaWebShare,
 } from '../../utils/shareUtils';
+import { useLanguage } from '../../lib/i18n';
 
 interface CalculatorProps {
   calculationId?: string;
@@ -44,6 +45,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
   readOnly = false 
 }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [discountValue, setDiscountValue] = useState('');
   const [taxValue, setTaxValue] = useState('');
   const [discountResult, setDiscountResult] = useState(0);
@@ -258,9 +260,9 @@ export const Calculator: React.FC<CalculatorProps> = ({
         if (success) {
           const updatedShareUrl = await buildShareUrl(currentCalculationId);
           setShareUrl(updatedShareUrl);
-          showNotification('Calculation updated successfully!');
+          showNotification(t('common.calculationUpdated'));
         } else {
-          showNotification('Failed to update calculation', 'error');
+          showNotification(t('common.calculationUpdateFailed'), 'error');
         }
       } else {
         // Create new calculation
@@ -270,14 +272,14 @@ export const Calculator: React.FC<CalculatorProps> = ({
           const newShareUrl = await buildShareUrl(id);
           setShareUrl(newShareUrl);
           navigate(`/${id}/insert`);
-          showNotification('Calculation saved!');
+          showNotification(t('common.calculationSaved'));
         } else {
-          showNotification('Failed to save calculation', 'error');
+          showNotification(t('common.calculationSaveFailed'), 'error');
         }
       }
     } catch (error) {
       console.error('Error saving calculation:', error);
-      showNotification('Failed to save calculation', 'error');
+      showNotification(t('common.calculationSaveFailed'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -285,7 +287,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
 
   const handleShare = async () => {
     if (!currentCalculationId) {
-      showNotification('Please save the calculation first', 'error');
+      showNotification(t('common.pleaseSaveFirst'), 'error');
       return;
     }
 
@@ -302,37 +304,39 @@ export const Calculator: React.FC<CalculatorProps> = ({
       }
 
       if (!resultsRef.current) {
-        showNotification('Results not ready to export', 'error');
+        showNotification(t('common.resultsNotReady'), 'error');
         return;
       }
 
       const imageDataUrl = await generateNodeImage(resultsRef.current);
       if (!imageDataUrl) {
-        showNotification('Failed to generate results image', 'error');
+        showNotification(t('common.failedGenerateImage'), 'error');
         return;
       }
 
       const filename = 'nekolators-basic-results.png';
-      const shareText = url ? `Nekolators results: ${url}` : 'Nekolators results';
+      const shareText = url
+        ? t('calculator.shareMessageWithLink', { link: url })
+        : t('calculator.shareMessage');
       const shared = await shareImageViaWebShare(imageDataUrl, filename, shareText);
 
       if (shared) {
-        showNotification('Share sheet opened!');
+        showNotification(t('common.shareSheetOpened'));
         return;
       }
 
       if (isMobileDevice()) {
         openWhatsAppShare(shareText);
         downloadImageDataUrl(imageDataUrl, filename);
-        showNotification('WhatsApp share opened. Image downloaded as backup.');
+        showNotification(t('common.whatsappShareOpened'));
         return;
       }
 
       downloadImageDataUrl(imageDataUrl, filename);
-      showNotification('Results image downloaded. Share link copied to clipboard.');
+      showNotification(t('common.resultsDownloaded'));
     } catch (error) {
       console.error('Error sharing calculation:', error);
-      showNotification('Failed to share calculation', 'error');
+      showNotification(t('common.failedShare'), 'error');
     }
   };
 
@@ -344,15 +348,15 @@ export const Calculator: React.FC<CalculatorProps> = ({
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        showNotification('Share link copied to clipboard!');
+        showNotification(t('common.copyShareLink'));
         return;
       } catch {
-        showNotification('Unable to copy automatically. Copy it manually from the link.', 'error');
+        showNotification(t('common.unableToCopy'), 'error');
         return;
       }
     }
 
-    showNotification('Clipboard unavailable. Copy it manually from the link.', 'error');
+    showNotification(t('common.clipboardUnavailable'), 'error');
   }, [shareUrl, showNotification]);
 
   const overallTotal = calculateOverallTotal(persons);
@@ -380,7 +384,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
           >
             <ArrowLeft size={20} />
             <Home size={20} />
-            <span className="hidden sm:inline">Home</span>
+            <span className="hidden sm:inline">{t('common.home')}</span>
           </Link>
           
           <div className="flex gap-2">
@@ -393,7 +397,11 @@ export const Calculator: React.FC<CalculatorProps> = ({
                 >
                   <Save size={16} />
                   <span className="hidden sm:inline">
-                    {isSaving ? 'Saving...' : currentCalculationId ? 'Update' : 'Save'}
+                    {isSaving
+                      ? t('common.saving')
+                      : currentCalculationId
+                      ? t('common.update')
+                      : t('common.save')}
                   </span>
                 </button>
                 
@@ -403,7 +411,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   <Share2 size={16} />
-                  <span className="hidden sm:inline">Share</span>
+                  <span className="hidden sm:inline">{t('common.share')}</span>
                 </button>
               </>
             )}
@@ -411,7 +419,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
         </div>
         {shareUrl && (
           <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-white/10 px-4 py-3 text-white">
-            <span className="text-sm font-semibold">Share link:</span>
+            <span className="text-sm font-semibold">{t('common.shareLinkLabel')}</span>
             <a
               href={shareUrl}
               target="_blank"
@@ -424,14 +432,14 @@ export const Calculator: React.FC<CalculatorProps> = ({
               onClick={handleCopyShareUrl}
               className="rounded-md bg-white/20 px-3 py-1 text-sm font-semibold transition-colors hover:bg-white/30"
             >
-              Copy
+              {t('common.copy')}
             </button>
           </div>
         )}
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
-            Nekolators
+            {t('common.appName')}
           </h1>
         </div>
 
@@ -459,7 +467,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
             <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-700">
-                Masukan harga /orang
+                {t('calculator.personPriceHeading')}
               </h3>
             </div>
 
@@ -481,7 +489,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
 
             <div className="text-center">
               <p className="text-lg font-medium text-gray-600 mb-4">
-                Total: {formatNumber(overallTotal)}
+                {t('calculator.totalLabel', { value: formatNumber(overallTotal) })}
               </p>
 
               <button
@@ -489,7 +497,7 @@ export const Calculator: React.FC<CalculatorProps> = ({
                 className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium"
               >
                 <Plus size={20} />
-                Add +
+                {t('calculator.addPersonButton')}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import type { Person, ExpertTotals } from '../../types/expert';
+import { useLanguage } from '../../lib/i18n';
 
 interface ExpertResultsProps {
   persons: Person[];
@@ -10,12 +11,14 @@ interface ExpertResultsProps {
 
 export const ExpertResults = forwardRef<HTMLDivElement, ExpertResultsProps>(
   ({ persons, totals, discount, tax }, ref) => {
+    const { t } = useLanguage();
+
     return (
       <div ref={ref} className="bg-white rounded-lg shadow-xl p-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Results</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">{t('expert.resultsTitle')}</h3>
         
         <div className="space-y-4">
-          {persons.map((person) => {
+          {persons.map((person, index) => {
             const personTotal = totals.personTotals[person.id] || 0;
             
             return (
@@ -26,7 +29,7 @@ export const ExpertResults = forwardRef<HTMLDivElement, ExpertResultsProps>(
                     style={{ backgroundColor: person.color }}
                   />
                   <span className="font-medium">
-                    {person.name || `Person ${persons.indexOf(person) + 1}`}
+                    {person.name || t('expert.personFallback', { index: index + 1 })}
                   </span>
                 </div>
                 
@@ -35,7 +38,11 @@ export const ExpertResults = forwardRef<HTMLDivElement, ExpertResultsProps>(
                     {new Intl.NumberFormat('id-ID').format(Math.round(personTotal))}
                   </div>
                   <div className="text-xs text-gray-500">
-                    Items: {new Intl.NumberFormat('id-ID').format(Math.round(totals.personItemTotals[person.id] || 0))}
+                    {t('expert.personItemsLabel', {
+                      value: new Intl.NumberFormat('id-ID').format(
+                        Math.round(totals.personItemTotals[person.id] || 0)
+                      ),
+                    })}
                   </div>
                 </div>
               </div>
@@ -45,25 +52,25 @@ export const ExpertResults = forwardRef<HTMLDivElement, ExpertResultsProps>(
           <div className="pt-4 border-t-2 border-orange-200">
             <div className="space-y-2 text-sm text-gray-600 mb-3">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
+                <span>{t('expert.subtotalLabel')}</span>
                 <span>{new Intl.NumberFormat('id-ID').format(Math.round(totals.subtotal))}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between">
-                  <span>Discount:</span>
+                  <span>{t('expert.discountShortLabel')}</span>
                   <span>-{new Intl.NumberFormat('id-ID').format(Math.round(discount))}</span>
                 </div>
               )}
               {tax > 0 && (
                 <div className="flex justify-between">
-                  <span>Tax & Shipping:</span>
+                  <span>{t('expert.taxShortLabel')}</span>
                   <span>{new Intl.NumberFormat('id-ID').format(Math.round(tax))}</span>
                 </div>
               )}
             </div>
             
             <div className="flex justify-between items-center text-xl font-bold text-orange-600">
-              <span>Total Final:</span>
+              <span>{t('expert.finalTotalLabel')}</span>
               <span>{new Intl.NumberFormat('id-ID').format(Math.round(totals.finalTotal))}</span>
             </div>
           </div>

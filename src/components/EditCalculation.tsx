@@ -4,17 +4,19 @@ import { ArrowLeft } from 'lucide-react';
 import { getCalculation } from '../services/calculationService';
 import { Calculator } from './Calculator/Calculator';
 import type { CalculationData } from '../services/calculationService';
+import { useLanguage } from '../lib/i18n';
 
 export const EditCalculation: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [calculation, setCalculation] = useState<CalculationData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchCalculation = async () => {
       if (!id) {
-        setError('No calculation ID provided');
+        setErrorKey('common.noCalculationId');
         setLoading(false);
         return;
       }
@@ -24,10 +26,10 @@ export const EditCalculation: React.FC = () => {
         if (data) {
           setCalculation(data);
         } else {
-          setError('Calculation not found');
+          setErrorKey('common.calculationNotFound');
         }
       } catch (err) {
-        setError('Failed to load calculation');
+        setErrorKey('common.failedLoadCalculation');
         console.error('Error fetching calculation:', err);
       } finally {
         setLoading(false);
@@ -42,25 +44,27 @@ export const EditCalculation: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading calculation...</p>
+          <p className="text-gray-600">{t('common.loadingCalculation')}</p>
         </div>
       </div>
     );
   }
 
-  if (error || !calculation) {
+  if (errorKey || !calculation) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800 p-4 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center max-w-md">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Calculation Not Found</h2>
-          <p className="text-gray-600 mb-6">{error || 'The calculation you\'re looking for doesn\'t exist.'}</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('common.calculationNotFound')}</h2>
+          <p className="text-gray-600 mb-6">
+            {errorKey ? t(errorKey) : t('common.errorNotFoundDescription')}
+          </p>
           <Link
             to="/calculator"
             className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
           >
             <ArrowLeft size={20} />
-            Back to Calculator
+            {t('view.backToCalculator')}
           </Link>
         </div>
       </div>

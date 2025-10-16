@@ -19,6 +19,7 @@ import {
   openWhatsAppShare,
   shareImageViaWebShare,
 } from '../../utils/shareUtils';
+import { useLanguage } from '../../lib/i18n';
 
 interface ExpertCalculatorProps {
   calculationId?: string;
@@ -31,6 +32,7 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
   
   // Get initial data from receipt upload if available
   const locationData = location.state;
@@ -234,9 +236,9 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
         if (success) {
           const updatedShareUrl = await buildShareUrl(currentCalculationId);
           setShareUrl(updatedShareUrl);
-          showNotification('Calculation updated successfully!');
+          showNotification(t('common.calculationUpdated'));
         } else {
-          showNotification('Failed to update calculation', 'error');
+          showNotification(t('common.calculationUpdateFailed'), 'error');
         }
       } else {
         // Create new calculation
@@ -247,17 +249,17 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
 
           const newShareUrl = await buildShareUrl(id);
           setShareUrl(newShareUrl);
-          showNotification('Calculation saved!');
+          showNotification(t('common.calculationSaved'));
 
           // Update URL without navigation to avoid reload
           window.history.replaceState(null, '', `/expert/${id}/edit`);
         } else {
-          showNotification('Failed to save calculation', 'error');
+          showNotification(t('common.calculationSaveFailed'), 'error');
         }
       }
     } catch (error) {
       console.error('Error saving calculation:', error);
-      showNotification('Failed to save calculation', 'error');
+      showNotification(t('common.calculationSaveFailed'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -265,7 +267,7 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
 
   const handleShare = async () => {
     if (!currentCalculationId) {
-      showNotification('Please save the calculation first to get a share link', 'error');
+      showNotification(t('common.pleaseSaveFirstShareLink'), 'error');
       return;
     }
 
@@ -282,39 +284,39 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
       }
 
       if (!resultsRef.current) {
-        showNotification('Results not ready to export', 'error');
+        showNotification(t('common.resultsNotReady'), 'error');
         return;
       }
 
       const imageDataUrl = await generateNodeImage(resultsRef.current);
       if (!imageDataUrl) {
-        showNotification('Failed to generate results image', 'error');
+        showNotification(t('common.failedGenerateImage'), 'error');
         return;
       }
 
       const filename = 'nekolators-expert-results.png';
       const shareText = shareLink
-        ? `Nekolators expert results: ${shareLink}`
-        : 'Nekolators expert results';
+        ? t('expert.shareMessageWithLink', { link: shareLink })
+        : t('expert.shareMessage');
       const shared = await shareImageViaWebShare(imageDataUrl, filename, shareText);
 
       if (shared) {
-        showNotification('Share sheet opened!');
+        showNotification(t('common.shareSheetOpened'));
         return;
       }
 
       if (isMobileDevice()) {
         openWhatsAppShare(shareText);
         downloadImageDataUrl(imageDataUrl, filename);
-        showNotification('WhatsApp share opened. Image downloaded as backup.');
+        showNotification(t('common.whatsappShareOpened'));
         return;
       }
 
       downloadImageDataUrl(imageDataUrl, filename);
-      showNotification('Results image downloaded. Share link copied to clipboard.');
+      showNotification(t('common.resultsDownloaded'));
     } catch (error) {
       console.error('Error sharing expert calculation:', error);
-      showNotification('Failed to share calculation', 'error');
+      showNotification(t('common.failedShare'), 'error');
     }
   };
 
@@ -326,15 +328,15 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        showNotification('Share link copied to clipboard!');
+        showNotification(t('common.copyShareLink'));
         return;
       } catch {
-        showNotification('Unable to copy automatically. Copy it manually from the link.', 'error');
+        showNotification(t('common.unableToCopy'), 'error');
         return;
       }
     }
 
-    showNotification('Clipboard unavailable. Copy it manually from the link.', 'error');
+    showNotification(t('common.clipboardUnavailable'), 'error');
   }, [shareUrl, showNotification]);
 
   return (
@@ -359,34 +361,38 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
           >
             <ArrowLeft size={20} />
             <Home size={20} />
-            <span className="hidden sm:inline">Home</span>
+            <span className="hidden sm:inline">{t('common.home')}</span>
           </Link>
           
           <div className="flex gap-2">
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              <Save size={16} />
-              <span className="hidden sm:inline">
-                {isSaving ? 'Saving...' : currentCalculationId ? 'Update' : 'Save'}
-              </span>
-            </button>
-            
-            <button
-              onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            <Save size={16} />
+            <span className="hidden sm:inline">
+                {isSaving
+                  ? t('common.saving')
+                  : currentCalculationId
+                  ? t('common.update')
+                  : t('common.save')}
+            </span>
+          </button>
+          
+          <button
+            onClick={handleShare}
               disabled={!currentCalculationId}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-            >
-              <Share2 size={16} />
-              <span className="hidden sm:inline">Share</span>
-            </button>
-          </div>
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            <Share2 size={16} />
+              <span className="hidden sm:inline">{t('common.share')}</span>
+          </button>
         </div>
-        {shareUrl && (
-          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-white/10 px-4 py-3 text-white">
-            <span className="text-sm font-semibold">Share link:</span>
+      </div>
+      {shareUrl && (
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-md bg-white/10 px-4 py-3 text-white">
+            <span className="text-sm font-semibold">{t('common.shareLinkLabel')}</span>
             <a
               href={shareUrl}
               target="_blank"
@@ -399,21 +405,28 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
               onClick={handleCopyShareUrl}
               className="rounded-md bg-white/20 px-3 py-1 text-sm font-semibold transition-colors hover:bg-white/30"
             >
-              Copy
+              {t('common.copy')}
             </button>
           </div>
         )}
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-orange-400 mb-2">
-            Expert Calculator
+            {t('expert.title')}
           </h1>
           <p className="text-white/80">
-            {receiptData ? `Receipt: ${receiptData.transaction_id}` : currentCalculationId ? 'Editing saved calculation' : 'Drag & drop items and assign to people'}
+            {receiptData
+              ? t('expert.receiptLabel', { id: receiptData.transaction_id })
+              : currentCalculationId
+              ? t('expert.editingSaved')
+              : t('expert.dragAndAssign')}
           </p>
           {receiptData && (
             <div className="mt-2 text-sm text-white/60">
-              {receiptData.transaction_date} • {receiptData.customer_name}
+              {t('expert.receiptMeta', {
+                date: receiptData.transaction_date,
+                customer: receiptData.customer_name,
+              })}
             </div>
           )}
         </div>
@@ -423,14 +436,14 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
           {/* Items Section */}
           <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-700">Items</h3>
+              <h3 className="text-lg font-semibold text-gray-700">{t('expert.itemsTitle')}</h3>
               <button
                 onClick={addItem}
                 className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm min-h-[40px]"
               >
                 <Plus size={16} />
-                <span className="hidden sm:inline">Add Item</span>
-                <span className="sm:hidden">Add</span>
+                <span className="hidden sm:inline">{t('common.addItem')}</span>
+                <span className="sm:hidden">{t('common.add')}</span>
               </button>
             </div>
 
@@ -472,7 +485,9 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
             <div className="mt-6 space-y-4 pt-4 border-t border-gray-200">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Total Discount: {new Intl.NumberFormat('id-ID').format(Math.round(discount))}
+                  {t('expert.discountLabel', {
+                    value: new Intl.NumberFormat('id-ID').format(Math.round(discount)),
+                  })}
                 </label>
                 <input
                   type="text"
@@ -486,12 +501,14 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Enter discount amounts like 10000+5000
+                  {t('expert.discountHint')}
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tax & Shipping: {new Intl.NumberFormat('id-ID').format(Math.round(tax))}
+                  {t('expert.taxLabel', {
+                    value: new Intl.NumberFormat('id-ID').format(Math.round(tax)),
+                  })}
                 </label>
                 <input
                   type="text"
@@ -505,7 +522,7 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[40px]"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Enter tax and shipping like 7000+3000
+                  {t('expert.taxHint')}
                 </p>
               </div>
             </div>
@@ -514,19 +531,19 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
           {/* People Section */}
           <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-700">People</h3>
+              <h3 className="text-lg font-semibold text-gray-700">{t('expert.peopleTitle')}</h3>
               <button
                 onClick={addPerson}
                 className="flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-sm min-h-[40px]"
               >
                 <Plus size={16} />
-                <span className="hidden sm:inline">Add Person</span>
-                <span className="sm:hidden">Add</span>
+                <span className="hidden sm:inline">{t('common.addPerson')}</span>
+                <span className="sm:hidden">{t('common.add')}</span>
               </button>
             </div>
 
             <div className="space-y-3">
-              {persons.map((person) => (
+              {persons.map((person, index) => (
                 <div key={person.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg min-h-[56px]">
                   <div
                     className="w-4 h-4 rounded-full"
@@ -536,7 +553,7 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
                     type="text"
                     value={person.name}
                     onChange={(e) => updatePerson(person.id, { name: e.target.value })}
-                    placeholder={`Person ${persons.indexOf(person) + 1}`}
+                    placeholder={t('expert.personPlaceholder', { index: index + 1 })}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 min-h-[40px]"
                   />
                   <button
@@ -552,7 +569,7 @@ export const ExpertCalculator: React.FC<ExpertCalculatorProps> = ({
 
           {/* Assignment Section */}
           <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">Assignments</h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">{t('expert.assignmentsTitle')}</h3>
             <PersonAssignment
               items={items}
               persons={persons}
