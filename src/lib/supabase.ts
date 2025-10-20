@@ -15,6 +15,7 @@ export type Database = {
       calculations: {
         Row: {
           id: string;
+          user_id: string | null;
           discount_value: string;
           discount_result: number;
           tax_value: string;
@@ -27,6 +28,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
+          user_id?: string | null;
           discount_value?: string;
           discount_result?: number;
           tax_value?: string;
@@ -39,6 +41,7 @@ export type Database = {
         };
         Update: {
           id?: string;
+          user_id?: string | null;
           discount_value?: string;
           discount_result?: number;
           tax_value?: string;
@@ -52,6 +55,7 @@ export type Database = {
       expert_calculations: {
         Row: {
           id: string;
+          user_id: string | null;
           items: Item[];
           persons: Person[];
           assignments: Assignment[];
@@ -67,6 +71,7 @@ export type Database = {
         };
         Insert: {
           id?: string;
+          user_id?: string | null;
           items?: Item[];
           persons?: Person[];
           assignments?: Assignment[];
@@ -82,6 +87,7 @@ export type Database = {
         };
         Update: {
           id?: string;
+          user_id?: string | null;
           items?: Item[];
           persons?: Person[];
           assignments?: Assignment[];

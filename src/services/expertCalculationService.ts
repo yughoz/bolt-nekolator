@@ -17,9 +17,13 @@ export interface ExpertCalculationData {
 
 export const saveExpertCalculation = async (data: ExpertCalculationData): Promise<string | null> => {
   try {
+    // Get current user to associate with calculation
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { data: result, error } = await supabase
       .from('expert_calculations')
       .insert({
+        user_id: user?.id || null,
         items: data.items,
         persons: data.persons,
         assignments: data.assignments,
@@ -80,9 +84,13 @@ export const getExpertCalculation = async (id: string): Promise<ExpertCalculatio
 
 export const updateExpertCalculation = async (id: string, data: Partial<ExpertCalculationData>): Promise<boolean> => {
   try {
+    // Get current user to associate with calculation
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { error } = await supabase
       .from('expert_calculations')
       .update({
+        user_id: user?.id || null,
         items: data.items,
         persons: data.persons,
         assignments: data.assignments,
@@ -106,5 +114,43 @@ export const updateExpertCalculation = async (id: string, data: Partial<ExpertCa
   } catch (error) {
     console.error('Error updating expert calculation:', error);
     return false;
+  }
+};
+
+export const getUserExpertCalculations = async (): Promise<ExpertCalculationData[]> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('expert_calculations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user expert calculations:', error);
+      return [];
+    }
+
+    return data.map(calc => ({
+      id: calc.id,
+      items: calc.items,
+      persons: calc.persons,
+      assignments: calc.assignments,
+      discountValue: calc.discount_value || '',
+      taxValue: calc.tax_value || '',
+      discount: calc.discount,
+      tax: calc.tax,
+      subtotal: calc.subtotal,
+      finalTotal: calc.final_total,
+      receiptData: calc.receipt_data,
+    }));
+  } catch (error) {
+    console.error('Error fetching user expert calculations:', error);
+    return [];
   }
 };

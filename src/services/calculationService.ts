@@ -14,9 +14,13 @@ export interface CalculationData {
 
 export const saveCalculation = async (data: CalculationData): Promise<string | null> => {
   try {
+    // Get current user to associate with calculation
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { data: result, error } = await supabase
       .from('calculations')
       .insert({
+        user_id: user?.id || null,
         discount_value: data.discountValue,
         discount_result: data.discountResult,
         tax_value: data.taxValue,
@@ -71,9 +75,13 @@ export const getCalculation = async (id: string): Promise<CalculationData | null
 
 export const updateCalculation = async (id: string, data: Partial<CalculationData>): Promise<boolean> => {
   try {
+    // Get current user to associate with calculation
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { error } = await supabase
       .from('calculations')
       .update({
+        user_id: user?.id || null,
         discount_value: data.discountValue,
         discount_result: data.discountResult,
         tax_value: data.taxValue,
@@ -94,5 +102,40 @@ export const updateCalculation = async (id: string, data: Partial<CalculationDat
   } catch (error) {
     console.error('Error updating calculation:', error);
     return false;
+  }
+};
+
+export const getUserCalculations = async (): Promise<CalculationData[]> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('calculations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user calculations:', error);
+      return [];
+    }
+
+    return data.map(calc => ({
+      id: calc.id,
+      discountValue: calc.discount_value,
+      discountResult: calc.discount_result,
+      taxValue: calc.tax_value,
+      taxResult: calc.tax_result,
+      persons: calc.persons,
+      overallTotal: calc.overall_total,
+      finalTotal: calc.final_total,
+    }));
+  } catch (error) {
+    console.error('Error fetching user calculations:', error);
+    return [];
   }
 };

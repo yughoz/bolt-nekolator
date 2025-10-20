@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import { HomePage } from './components/HomePage';
 import { Calculator } from './components/Calculator/Calculator';
 import { ReceiptUpload } from './components/ReceiptUpload/ReceiptUpload';
 import { ExpertCalculator } from './components/ExpertCalculator/ExpertCalculator';
+import { History } from './components/History/History';
 import { ViewCalculation } from './components/ViewCalculation';
 import { EditCalculation } from './components/EditCalculation';
 import { ViewExpertCalculation } from './components/ViewExpertCalculation';
@@ -13,20 +15,23 @@ import { LanguageToggle } from './components/common/LanguageToggle';
 
 function App() {
   return (
-    <Router>
-      <LanguageToggle />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/calculator" element={<Calculator />} />
-        <Route path="/upload" element={<ReceiptUpload />} />
-        <Route path="/expert" element={<ExpertCalculator />} />
-        <Route path="/s/:shortCode" element={<ShortLinkResolver />} />
-        <Route path="/:id" element={<ViewCalculation />} />
-        <Route path="/:id/insert" element={<EditCalculation />} />
-        <Route path="/expert/:id" element={<ViewExpertCalculation />} />
-        <Route path="/expert/:id/edit" element={<EditExpertCalculation />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <LanguageToggle />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/calculator" element={<Calculator />} />
+          <Route path="/upload" element={<ReceiptUpload />} />
+          <Route path="/expert" element={<ExpertCalculator />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/s/:shortCode" element={<ShortLinkResolver />} />
+          <Route path="/:id" element={<ViewCalculation />} />
+          <Route path="/:id/insert" element={<EditCalculation />} />
+          <Route path="/expert/:id" element={<ViewExpertCalculation />} />
+          <Route path="/expert/:id/edit" element={<EditExpertCalculation />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

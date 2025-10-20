@@ -1,23 +1,40 @@
 import React from 'react';
-import { Calculator, Users, Share2, Save, Sparkles, Menu } from 'lucide-react';
+import { Calculator, Users, Share2, Save, Sparkles, Menu, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../lib/i18n';
+import { GoogleLogin } from './auth/GoogleLogin';
+import { useAuth } from '../contexts/AuthContext';
 
 export const HomePage: React.FC = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-purple-800">
       {/* Hero Section */}
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl md:text-7xl font-bold text-orange-400 mb-4">
+        {/* Top Navigation */}
+        <div className="fixed top-4 right-4 z-10 flex items-center gap-3">
+          {user && (
+            <Link
+              to="/history"
+              className="flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm text-white rounded-md hover:bg-white/20 transition-colors text-sm sm:text-base sm:px-4"
+            >
+              <Clock size={18} className="sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">{t('history.title')}</span>
+            </Link>
+          )}
+          <GoogleLogin />
+        </div>
+
+        <div className="text-center mb-12 mt-16 sm:mt-8">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-orange-400 mb-4 px-4">
             {t('home.heroTitle')}
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-2">
+          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-2 px-4">
             {t('home.heroSubtitle')}
           </p>
-          <p className="text-lg text-white/70">
+          <p className="text-base sm:text-lg text-white/70 px-4">
             {t('home.heroDescription')}
           </p>
         </div>
