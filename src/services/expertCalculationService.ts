@@ -18,7 +18,7 @@ export interface ExpertCalculationData {
 
 export const saveExpertCalculation = async (data: ExpertCalculationData): Promise<string | null> => {
   try {
-    const record = await pb.collection('expert_calculations').create<ExpertCalculation>({
+    const record = await pb.collection('bolt_expert_calculations').create<ExpertCalculation>({
       items: data.items,
       persons: data.persons,
       assignments: data.assignments,
@@ -40,7 +40,7 @@ export const saveExpertCalculation = async (data: ExpertCalculationData): Promis
 
 export const getExpertCalculation = async (id: string): Promise<ExpertCalculationData | null> => {
   try {
-    const data = await pb.collection('expert_calculations').getOne<ExpertCalculation>(id);
+    const data = await pb.collection('bolt_expert_calculations').getOne<ExpertCalculation>(id);
 
     return {
       id: data.id,
@@ -76,7 +76,7 @@ export const updateExpertCalculation = async (id: string, data: Partial<ExpertCa
     if (data.finalTotal !== undefined) updateData.final_total = data.finalTotal;
     if (data.receiptData !== undefined) updateData.receipt_data = data.receiptData;
 
-    await pb.collection('expert_calculations').update(id, updateData);
+    await pb.collection('bolt_expert_calculations').update(id, updateData);
     return true;
   } catch (error) {
     console.error('Error updating expert calculation:', error);

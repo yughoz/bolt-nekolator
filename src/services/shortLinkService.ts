@@ -23,7 +23,7 @@ export const createShortLink = async (
 
     while (attempts < maxAttempts) {
       try {
-        const record = await pb.collection('short_links').create<ShortLink>({
+        const record = await pb.collection('bolt_short_links').create<ShortLink>({
           code: shortCode,
           target_type: calculationType,
           calculation_id: calculationId,
@@ -55,7 +55,7 @@ export const resolveShortLink = async (shortCode: string): Promise<{
   calculationId: string;
 } | null> => {
   try {
-    const data = await pb.collection('short_links').getFirstListItem<ShortLink>(`code="${shortCode}"`);
+    const data = await pb.collection('bolt_short_links').getFirstListItem<ShortLink>(`code="${shortCode}"`);
 
     return {
       calculationType: data.target_type as 'basic' | 'expert',
@@ -72,7 +72,7 @@ export const getExistingShortLink = async (
   calculationType: 'basic' | 'expert'
 ): Promise<string | null> => {
   try {
-    const data = await pb.collection('short_links').getFirstListItem<ShortLink>(
+    const data = await pb.collection('bolt_short_links').getFirstListItem<ShortLink>(
       `calculation_id="${calculationId}" && target_type="${calculationType}"`
     );
 

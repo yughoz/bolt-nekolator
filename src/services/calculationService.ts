@@ -15,7 +15,7 @@ export interface CalculationData {
 
 export const saveCalculation = async (data: CalculationData): Promise<string | null> => {
   try {
-    const record = await pb.collection('calculations').create<Calcination>({
+    const record = await pb.collection('bolt_calculations').create<Calcination>({
       discount_value: data.discountValue,
       discount_result: data.discountResult,
       tax_value: data.taxValue,
@@ -34,7 +34,7 @@ export const saveCalculation = async (data: CalculationData): Promise<string | n
 
 export const getCalculation = async (id: string): Promise<CalculationData | null> => {
   try {
-    const data = await pb.collection('calculations').getOne<Calculation>(id);
+    const data = await pb.collection('bolt_calculations').getOne<Calculation>(id);
 
     return {
       id: data.id,
@@ -64,7 +64,7 @@ export const updateCalculation = async (id: string, data: Partial<CalculationDat
     if (data.overallTotal !== undefined) updateData.overall_total = data.overallTotal;
     if (data.finalTotal !== undefined) updateData.final_total = data.finalTotal;
 
-    await pb.collection('calculations').update(id, updateData);
+    await pb.collection('bolt_calculations').update(id, updateData);
     return true;
   } catch (error) {
     console.error('Error updating calculation:', error);
