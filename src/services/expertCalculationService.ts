@@ -1,5 +1,6 @@
-import { supabase } from '../lib/supabase';
+import { pb } from '../lib/pocketbase';
 import type { Item, Person, Assignment } from '../types/expert';
+import type { ExpertCalculation } from '../lib/pocketbase';
 
 export interface ExpertCalculationData {
   id?: string;
@@ -17,29 +18,20 @@ export interface ExpertCalculationData {
 
 export const saveExpertCalculation = async (data: ExpertCalculationData): Promise<string | null> => {
   try {
-    const { data: result, error } = await supabase
-      .from('expert_calculations')
-      .insert({
-        items: data.items,
-        persons: data.persons,
-        assignments: data.assignments,
-        discount_value: data.discountValue || '',
-        tax_value: data.taxValue || '',
-        discount: data.discount,
-        tax: data.tax,
-        subtotal: data.subtotal,
-        final_total: data.finalTotal,
-        receipt_data: data.receiptData,
-      })
-      .select('id')
-      .single();
+    const record = await pb.collection('expert_calculations').create<ExpertCalculation>({
+      items: data.items,
+      persons: data.persons,
+      assignments: data.assignments,
+      discount_value: data.discountValue || '',
+      tax_value: data.taxValue || '',
+      discount: data.discount,
+      tax: data.tax,
+      subtotal: data.subtotal,
+      final_total: data.finalTotal,
+      receipt_data: data.receiptData,
+    });
 
-    if (error) {
-      console.error('Error saving expert calculation:', error);
-      return null;
-    }
-
-    return result.id;
+    return record.id || null;
   } catch (error) {
     console.error('Error saving expert calculation:', error);
     return null;
@@ -48,16 +40,7 @@ export const saveExpertCalculation = async (data: ExpertCalculationData): Promis
 
 export const getExpertCalculation = async (id: string): Promise<ExpertCalculationData | null> => {
   try {
-    const { data, error } = await supabase
-      .from('expert_calculations')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching expert calculation:', error);
-      return null;
-    }
+    const data = await pb.collection('expert_calculations').getOne<ExpertCalculation>(id);
 
     return {
       id: data.id,
@@ -80,28 +63,20 @@ export const getExpertCalculation = async (id: string): Promise<ExpertCalculatio
 
 export const updateExpertCalculation = async (id: string, data: Partial<ExpertCalculationData>): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('expert_calculations')
-      .update({
-        items: data.items,
-        persons: data.persons,
-        assignments: data.assignments,
-        discount_value: data.discountValue,
-        tax_value: data.taxValue,
-        discount: data.discount,
-        tax: data.tax,
-        subtotal: data.subtotal,
-        final_total: data.finalTotal,
-        receipt_data: data.receiptData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id);
+    const updateData: any = {};
 
-    if (error) {
-      console.error('Error updating expert calculation:', error);
-      return false;
-    }
+    if (data.items !== undefined) updateData.items = data.items;
+    if (data.persons !== undefined) updateData.persons = data.persons;
+    if (data.assignments !== undefined) updateData.assignments = data.assignments;
+    if (data.discountValue !== undefined) updateData.discount_value = data.discountValue;
+    if (data.taxValue !== undefined) updateData.tax_value = data.taxValue;
+    if (data.discount !== undefined) updateData.discount = data.discount;
+    if (data.tax !== undefined) updateData.tax = data.tax;
+    if (data.subtotal !== undefined) updateData.subtotal = data.subtotal;
+    if (data.finalTotal !== undefined) updateData.final_total = data.finalTotal;
+    if (data.receiptData !== undefined) updateData.receipt_data = data.receiptData;
 
+    await pb.collection('expert_calculations').update(id, updateData);
     return true;
   } catch (error) {
     console.error('Error updating expert calculation:', error);

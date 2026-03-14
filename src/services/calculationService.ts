@@ -1,5 +1,6 @@
-import { supabase } from '../lib/supabase';
+import { pb } from '../lib/pocketbase';
 import type { PersonEntry } from '../types/calculator';
+import type { Calculation } from '../lib/pocketbase';
 
 export interface CalculationData {
   id?: string;
@@ -14,26 +15,17 @@ export interface CalculationData {
 
 export const saveCalculation = async (data: CalculationData): Promise<string | null> => {
   try {
-    const { data: result, error } = await supabase
-      .from('calculations')
-      .insert({
-        discount_value: data.discountValue,
-        discount_result: data.discountResult,
-        tax_value: data.taxValue,
-        tax_result: data.taxResult,
-        persons: data.persons,
-        overall_total: data.overallTotal,
-        final_total: data.finalTotal,
-      })
-      .select('id')
-      .single();
+    const record = await pb.collection('calculations').create<Calcination>({
+      discount_value: data.discountValue,
+      discount_result: data.discountResult,
+      tax_value: data.taxValue,
+      tax_result: data.taxResult,
+      persons: data.persons,
+      overall_total: data.overallTotal,
+      final_total: data.finalTotal,
+    });
 
-    if (error) {
-      console.error('Error saving calculation:', error);
-      return null;
-    }
-
-    return result.id;
+    return record.id || null;
   } catch (error) {
     console.error('Error saving calculation:', error);
     return null;
@@ -42,16 +34,7 @@ export const saveCalculation = async (data: CalculationData): Promise<string | n
 
 export const getCalculation = async (id: string): Promise<CalculationData | null> => {
   try {
-    const { data, error } = await supabase
-      .from('calculations')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching calculation:', error);
-      return null;
-    }
+    const data = await pb.collection('calculations').getOne<Calculation>(id);
 
     return {
       id: data.id,
@@ -64,32 +47,24 @@ export const getCalculation = async (id: string): Promise<CalculationData | null
       finalTotal: data.final_total,
     };
   } catch (error) {
-    console.error('Error fetching calculation:', error);
+    console.error('Error getting calculation:', error);
     return null;
   }
 };
 
 export const updateCalculation = async (id: string, data: Partial<CalculationData>): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('calculations')
-      .update({
-        discount_value: data.discountValue,
-        discount_result: data.discountResult,
-        tax_value: data.taxValue,
-        tax_result: data.taxResult,
-        persons: data.persons,
-        overall_total: data.overallTotal,
-        final_total: data.finalTotal,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id);
+    const updateData: any = {};
 
-    if (error) {
-      console.error('Error updating calculation:', error);
-      return false;
-    }
+    if (data.discountValue !== undefined) updateData.discount_value = data.discountValue;
+    if (data.discountResult !== undefined) updateData.discount_result = data.discountResult;
+    if (data.taxValue !== undefined) updateData.tax_value = data.taxValue;
+    if (data.taxResult !== undefined) updateData.tax_result = data.taxResult;
+    if (data.persons !== undefined) updateData.persons = data.persons;
+    if (data.overallTotal !== undefined) updateData.overall_total = data.overallTotal;
+    if (data.finalTotal !== undefined) updateData.final_total = data.finalTotal;
 
+    await pb.collection('calculations').update(id, updateData);
     return true;
   } catch (error) {
     console.error('Error updating calculation:', error);

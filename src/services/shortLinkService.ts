@@ -1,21 +1,14 @@
-import { supabase } from '../lib/supabase';
+import { pb } from '../lib/pocketbase';
+import type { ShortLink } from '../lib/pocketbase';
 
-export interface ShortLink {
-  id: number;
-  short_code: string;
-  calculation_type: 'basic' | 'expert';
-  calculation_id: string;
-  created_at: string;
-}
-
-// Convert number to base-36
-const toBase36 = (num: number): string => {
-  return num.toString(36);
-};
-
-// Convert base-36 string to number
-const fromBase36 = (str: string): number => {
-  return parseInt(str, 36);
+// Generate random short code
+const generateShortCode = (): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 };
 
 export const createShortLink = async (
@@ -23,83 +16,34 @@ export const createShortLink = async (
   calculationType: 'basic' | 'expert'
 ): Promise<string | null> => {
   try {
-    // First insert with unique temporary short_code to avoid collisions
-    const tempShortCode = `temp-${crypto.randomUUID()}`;
-    const { data: result, error } = await supabase
-      .from('short_links')
-      .insert({
-        calculation_type: calculationType,
-        calculation_id: calculationId,
-        short_code: tempShortCode, // Unique temporary value
-      })
-      .select('id')
-      .single();
+    // Try to generate a unique short code
+    let shortCode = generateShortCode();
+    let attempts = 0;
+    const maxAttempts = 10;
 
-    if (error) {
-      console.error('Error creating short link:', error);
-      return null;
-    }
+    while (attempts < maxAttempts) {
+      try {
+        const record = await pb.collection('short_links').create<ShortLink>({
+          code: shortCode,
+          target_type: calculationType,
+          calculation_id: calculationId,
+        });
 
-    // Generate short code from the auto-increment ID
-    const shortCode = toBase36(result.id);
-
-    // Update the record with the actual short code
-    const { error: updateError } = await supabase
-      .from('short_links')
-      .update({ short_code: shortCode })
-      .eq('id', result.id);
-
-    if (updateError) {
-      // Handle unique constraint violation
-      if (updateError.code === '23505') { // Unique constraint violation
-        // Check if there's an existing short link with this short code
-        const { data: existingLink, error: queryError } = await supabase
-          .from('short_links')
-          .select('calculation_id, calculation_type')
-          .eq('short_code', shortCode)
-          .maybeSingle();
-
-        if (!queryError && existingLink) {
-          // If it's for the same calculation, delete our temporary entry and return the existing short code
-          if (existingLink.calculation_id === calculationId && existingLink.calculation_type === calculationType) {
-            // Clean up the temporary entry
-            await supabase
-              .from('short_links')
-              .delete()
-             .eq('id', result.id)
-             .maybeSingle();
-            return shortCode;
-          } else {
-            // Different calculation has this short code - clean up and return null
-            await supabase
-              .from('short_links')
-              .delete()
-              .eq('id', result.id);
-            console.error('Short code collision with different calculation:', shortCode);
-            return null;
-          }
-        } else {
-          // Clean up temporary entry if we can't determine the existing link
-          await supabase
-            .from('short_links')
-            .delete()
-           .eq('id', result.id)
-           .maybeSingle();
-          return null;
+        console.log('Successfully created short link:', shortCode);
+        return shortCode;
+      } catch (error: any) {
+        // If code already exists, try again with a new code
+        if (error.status === 400 && error.data?.data?.code?.code === 'validation_not_unique') {
+          attempts++;
+          shortCode = generateShortCode();
+          continue;
         }
-      } else {
-        // Clean up temporary entry for other update errors
-        await supabase
-          .from('short_links')
-          .delete()
-         .eq('id', result.id)
-         .maybeSingle();
-        return null;
+        throw error;
       }
     }
 
-    console.log('Successfully created short link:', shortCode);
-    return shortCode;
+    console.error('Failed to generate unique short code after', maxAttempts, 'attempts');
+    return null;
   } catch (error) {
     console.error('Error creating short link:', error);
     return null;
@@ -111,24 +55,10 @@ export const resolveShortLink = async (shortCode: string): Promise<{
   calculationId: string;
 } | null> => {
   try {
-    const { data, error } = await supabase
-      .from('short_links')
-      .select('calculation_type, calculation_id')
-      .eq('short_code', shortCode)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Database error resolving short link:', error);
-      return null;
-    }
-
-    if (!data) {
-      console.log('Short link not found:', shortCode);
-      return null;
-    }
+    const data = await pb.collection('short_links').getFirstListItem<ShortLink>(`code="${shortCode}"`);
 
     return {
-      calculationType: data.calculation_type,
+      calculationType: data.target_type as 'basic' | 'expert',
       calculationId: data.calculation_id,
     };
   } catch (error) {
@@ -142,18 +72,11 @@ export const getExistingShortLink = async (
   calculationType: 'basic' | 'expert'
 ): Promise<string | null> => {
   try {
-    const { data, error } = await supabase
-      .from('short_links')
-      .select('short_code')
-      .eq('calculation_id', calculationId)
-      .eq('calculation_type', calculationType)
-      .maybeSingle();
+    const data = await pb.collection('short_links').getFirstListItem<ShortLink>(
+      `calculation_id="${calculationId}" && target_type="${calculationType}"`
+    );
 
-    if (error || !data) {
-      return null;
-    }
-
-    return data.short_code;
+    return data.code;
   } catch (error) {
     return null;
   }
